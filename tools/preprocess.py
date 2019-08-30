@@ -9,14 +9,13 @@ from PIL import Image
 
 
 def read_pair(a, f):
-  img_a = Image.open(a)
-  img_f = Image.open(f)
-  
-	return img_a, img_f
+    img_a = Image.open(a)
+    img_f = Image.open(f)
+    return img_a, img_f
 
 def dataset_list(path):
-  train_ambnt_set = glob.glob(path+'train/*ambient.png')
-  train_flash_set = glob.glob(path+'train/*flash.png')
+    train_ambnt_set = glob.glob(path+'train/*ambient.png')
+    train_flash_set = glob.glob(path+'train/*flash.png')
 
     train_ambnt_set.sort()
     train_flash_set.sort()

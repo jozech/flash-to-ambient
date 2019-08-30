@@ -5,9 +5,9 @@ from models.ftoa_model import FtoA
 from options.base import baseOpt
 from tools.preprocess import read_and_crop_square_img
 
-def train_op(model, opts):
-  ambnt_imgs, flash_imgs = read_and_crop_square_img(path=opts.dataset_path, 
-  						                                      mode='train', SIZE=opts.load_size)
+def train_op(model, batch_size):
+  	ambnt_imgs, flash_imgs = read_and_crop_square_img(	path=opts.dataset_path, 
+  						                            	mode='train', SIZE=opts.load_size)
 
     for i in range(0, len(ambnt_imgs), opts.batch_size):
         ambnt_batch = ambnt_imgs[i:i+batch_size]

@@ -3,7 +3,7 @@ import os
 
 class baseOpt:
     def __init__(self):
-        self.init = False
+        self.init = False 
     
     def initialize(self, parser):
         parser.add_argument('--dataset_path', required=True, help='path to pairs of images with subfulders train and test')
