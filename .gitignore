@@ -5,3 +5,4 @@ tmp/
 */*.pyc
 */**/*.pyc
 datasets/
+checkpoints/

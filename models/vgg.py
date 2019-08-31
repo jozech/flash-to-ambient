@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 class vgg_encoder(nn.Module):
@@ -209,9 +210,19 @@ class vgg_decoder(nn.Module):
             self.relu4_1 = nn.ReLU(inplace=True)     #[28,28]
 
             self.unpool3 = nn.MaxUnpool2d(kernel_size=2, stride=2)
-            
+            self.unconv3 = nn.ConvTranspose2d(in_channels=256, 
+                                              out_channels=256, 
+                                              kernel_size=3, 
+                                              stride=2, 
+                                              padding=1, 
+                                              output_padding=1, 
+                                              groups=1, 
+                                              bias=True, 
+                                              dilation=1, 
+                                              padding_mode='zeros')
+
             self.pad3_4  = nn.ReflectionPad2d((1,1,1,1))
-            self.conv3_4 = nn.Conv2d(256,256,3,1,0)
+            self.conv3_4 = nn.Conv2d(512,256,3,1,0)
             self.relu3_4 = nn.ReLU(inplace=True)
 
             self.pad3_3  = nn.ReflectionPad2d((1,1,1,1))
@@ -229,9 +240,19 @@ class vgg_decoder(nn.Module):
             self.relu3_1 = nn.ReLU(inplace=True)
 
             self.unpool2 = nn.MaxUnpool2d(kernel_size=2, stride=2)
-            
+            self.unconv2 = nn.ConvTranspose2d(in_channels=128, 
+                                              out_channels=128, 
+                                              kernel_size=3, 
+                                              stride=2, 
+                                              padding=1, 
+                                              output_padding=1, 
+                                              groups=1, 
+                                              bias=True, 
+                                              dilation=1, 
+                                              padding_mode='zeros')
+
             self.pad2_2  = nn.ReflectionPad2d((1,1,1,1))
-            self.conv2_2 = nn.Conv2d(128,128,3,1,0)
+            self.conv2_2 = nn.Conv2d(256,128,3,1,0)
             self.relu2_2 = nn.ReLU(inplace=True)
 
         if level > 1:
@@ -240,15 +261,25 @@ class vgg_decoder(nn.Module):
             self.relu2_1 = nn.ReLU(inplace=True)
 
             self.unpool1 = nn.MaxUnpool2d(kernel_size=2, stride=2)
+            self.unconv1 = nn.ConvTranspose2d(in_channels=64, 
+                                              out_channels=64, 
+                                              kernel_size=3, 
+                                              stride=2, 
+                                              padding=1, 
+                                              output_padding=1, 
+                                              groups=1, 
+                                              bias=True, 
+                                              dilation=1, 
+                                              padding_mode='zeros')
 
             self.pad1_2  = nn.ReflectionPad2d((1,1,1,1))
-            self.conv1_2 = nn.Conv2d(64,64,3,1,0)
+            self.conv1_2 = nn.Conv2d(128,64,3,1,0)
             self.relu1_2 = nn.ReLU(inplace=True)
 
         if level > 0:
             self.pad1_1  = nn.ReflectionPad2d((1,1,1,1))
             self.conv1_1 = nn.Conv2d(64,3,3,1,0)
-
+            self.tanh1   = nn.Tanh()
 
     def forward(self, 
                 x, 
@@ -317,6 +348,91 @@ class vgg_decoder(nn.Module):
         if self.level > 0:
             out = self.pad1_1(out)
             out = self.conv1_1(out)
+            out = self.tanh1(out)
+            #print(out.shape)
+
+        return out
+
+    def forward_concat(self,
+                out4, 
+                out3,
+                out2,
+                out1,
+                pool1_idx =None, 
+                pool1_size=None,
+                pool2_idx =None,
+                pool2_size=None,
+                pool3_idx =None,
+                pool3_size=None
+                ):
+
+        out = out4
+        #print(out.shape)
+        #print(out3.shape)
+        #print('\nDecoder:')
+        if self.level > 3:
+            out = self.pad4_1(out)
+            out = self.conv4_1(out)
+            out = self.relu4_1(out)
+            #print(out.shape)
+            
+            out = self.unconv3(out)
+            #print(out.shape)
+            out = torch.cat((out,out3), dim=1)
+            #print(out.shape, 'cat')
+
+            out = self.pad3_4(out)
+            out = self.conv3_4(out)
+            out = self.relu3_4(out)
+            #print(out.shape)
+
+            out = self.pad3_3(out)
+            out = self.conv3_3(out)
+            out = self.relu3_3(out)
+            #print(out.shape)
+
+            out = self.pad3_2(out)
+            out = self.conv3_2(out)
+            out = self.relu3_2(out)
+            #print(out.shape)
+
+        if self.level > 2:
+            out = self.pad3_1(out)
+            out = self.conv3_1(out)
+            out = self.relu3_1(out)
+            #print(out.shape)
+
+            #out = self.unpool2(out, pool2_idx, output_size=pool2_size)
+            out = self.unconv2(out)
+            #print(out.shape)
+            out = torch.cat((out,out2), dim=1)
+            #print(out.shape, 'cat')
+
+            out = self.pad2_2(out)
+            out = self.conv2_2(out)
+            out = self.relu2_2(out)
+            #print(out.shape)
+
+        if self.level > 1:
+            out = self.pad2_1(out)
+            out = self.conv2_1(out)
+            out = self.relu2_1(out)
+            #print(out.shape)
+
+            #out = self.unpool1(out, pool1_idx, output_size=pool1_size)
+            out = self.unconv1(out)
+            #print(out.shape)
+            out = torch.cat((out,out1), dim=1)
+            #print(out.shape, 'cat')
+            out = self.pad1_2(out)
+            out = self.conv1_2(out)
+            out = self.relu1_2(out)
+            #print(out.shape)
+
+        if self.level > 0:
+            out = self.pad1_1(out)
+            out = self.conv1_1(out)
+            out = self.tanh1(out)
             #print(out.shape)
 
         return out

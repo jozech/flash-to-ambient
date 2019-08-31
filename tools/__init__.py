@@ -1,1 +1,2 @@
-from tools import preprocess
+from tools import pre
+from tools import post
