@@ -1,17 +1,18 @@
-from models.vgg_ed import vgg_encoder_decoder
+from models.vgg_ed_model import vgg_encoder_decoder
 from options.base import baseOpt
 
-from tools.pre import read_data
+from tools.pre import read_data, get_array
 from tools.pre import shuffle_data
 
 import numpy as np
 
 def train_op(model, opts):
-    ambnt_imgs, flash_imgs = read_data(path=opts.dataset_path, mode='train', SIZE=opts.crop_size)
+    imgs_list = read_data(path=opts.dataset_path, mode='train')
 
     for ep in range(1, opts.epochs+1):
+        ambnt_imgs, flash_imgs = get_array(imgs_list, mode='train', SIZE=opts.crop_size)
         ambnt_imgs, flash_imgs = shuffle_data(ambnt_imgs, flash_imgs)
-
+        #return
         nimgs = 0 
         loss_it = []
         for it in range(0, len(ambnt_imgs), opts.batch_size):

@@ -1,13 +1,14 @@
 import numpy as np
 
-from models.vgg_ed import vgg_encoder_decoder
+from models.vgg_ed_model import vgg_encoder_decoder
 from options.base import baseOpt
 
-from tools.pre import read_data
+from tools.pre import read_data, get_array
 from tools.post import PSNR
 
 def test_op(model, opts):
-    ambnt_imgs, flash_imgs = read_data(path=opts.dataset_path, mode='test', SIZE=opts.load_size)
+    imgs_list = read_data(path=opts.dataset_path, mode='test')
+    ambnt_imgs, flash_imgs = get_array(imgs_list, mode='test')
 
     psnr_ambnt_it = []
     psnr_flash_it = []
@@ -28,6 +29,6 @@ def test_op(model, opts):
 if __name__ == "__main__":
     opts  = baseOpt().parse()
     model = vgg_encoder_decoder(opts, isTrain=False)
-    model.load_model(200)
+    model.load_model(opts.load_epoch)
 
     test_op(model, opts)

@@ -1,23 +1,24 @@
 import torch
 import os
 
-from .nets import generator_concat, generator_unpool
+from .nets import vgg19_generator_concat, vgg16_generator_unpool, vgg16_generator_deconv
 
 class vgg_encoder_decoder:
 	def __init__(self, opts, isTrain=True, isAdv=False):
 		self.opts    = opts
 		self.isTrain =  isTrain
-
-
 		self.device = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
-		self.gen    = generator_concat().cuda()
-		self.gen.set_vgg_as_encoder()
 
 		if isTrain:
 			print('Training mode![on {}]\n'.format(self.device))
+			self.gen    = vgg16_generator_unpool(prob=0.0).cuda()
+			self.gen.set_vgg_as_encoder()	
 			self.criteionL1    = torch.nn.L1Loss()
 			self.optimizer_gen = torch.optim.Adam(self.gen.parameters(), lr=opts.lr, betas=(opts.beta1, 0.999))
-
+		else:
+			print('Testing mode![on {}]\n'.format(self.device))
+			self.gen    = vgg16_generator_unpool(prob=0.0).cuda()
+			self.gen.set_vgg_as_encoder()
 	def set_inputs(self, inputs, targets):
 		self.real_X = torch.cuda.FloatTensor(inputs)
 		self.real_Y = torch.cuda.FloatTensor(targets)

@@ -24,11 +24,12 @@ def PSNR(ifake, iambnt, iflash, it=None, save=True):
     iflash = iflash.astype(np.int32)
 
     if save:
-        imfake = Image.fromarray(np.uint8(ifake))
-        imreal = Image.fromarray(np.uint8(iambnt))
-        im2 = Image.fromarray(np.uint8(iambnt))
+        imfake  = Image.fromarray(np.uint8(ifake))
+        imreal  = Image.fromarray(np.uint8(iambnt))
+        imflash = Image.fromarray(np.uint8(iflash))
         imfake.save('results/fake_it_'+str(it)+'.png')
         imreal.save('results/real_it_'+str(it)+'.png')
+        imflash.save('results/flash_it_'+str(it)+'.png')
     
     MSE_ambnt = np.mean(np.square(ifake - iambnt))
     MSE_flash = np.mean(np.square(ifake - iflash))
