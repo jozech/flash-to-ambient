@@ -52,17 +52,17 @@ class vgg19_generator_unpool(nn.Module):
             self.enc4.conv4_1.bias.copy_(features_list[19].bias)
 
 
-class vgg19_generator_concat(nn.Module):
+class vgg19_generator_deconv(nn.Module):
     def __init__(self):
-        super(generator_concat, self).__init__()
+        super(vgg19_generator_deconv, self).__init__()
 
         self.enc4 = vgg19_encoder(4)
         self.dec4 = vgg19_decoder(4)
 
     def forward(self, input_imgs):  
         
-        out4, out3, out2, out1 = self.enc4.forward_multiple(input_imgs)
-        out_img = self.dec4.forward_concat(out4, out3, out2, out1)
+        layers = self.enc4.forward_multiple(input_imgs)
+        out_img = self.dec4.forward_concat(layers)
             
         return out4, out_img
 
@@ -72,8 +72,6 @@ class vgg19_generator_concat(nn.Module):
         vgg16 = models.vgg16(pretrained=True, progress=True)
         features_list = list(vgg16.features)
 
-        for layer in vgg16.features:
-            print(layer)
         with torch.no_grad():
             self.enc4.conv1_1.weight.copy_(features_list[0].weight)
             self.enc4.conv1_1.bias.copy_(features_list[0].bias)
@@ -171,10 +169,10 @@ class vgg16_generator_deconv(nn.Module):
 
     def forward(self, input_imgs):  
 
-        z, pool4, pool3, pool2, pool1 = self.enc5.forward_multiple(input_imgs)
-        out_img = self.dec5.forward_concat(z, pool4, pool3, pool2, pool1)
+        layers = self.enc5.forward_multiple(input_imgs)
+        out_img = self.dec5.forward_deconv(layers)
             
-        return z, out_img
+        return layers['z'], out_img
 
     def set_vgg_as_encoder(self):
         from torchvision import models
@@ -219,4 +217,72 @@ class vgg16_generator_deconv(nn.Module):
             self.enc5.conv5_3.weight.copy_(features_list[28].weight)
             self.enc5.conv5_3.bias.copy_(features_list[28].bias)
 
-#class discriminator(nn.Module):
+class discriminator(nn.Module):
+    def __init__(self):
+
+        self.conv1 = nn.Conv2d(in_channels = 3,
+                               out_channels= 64,
+                               kernel_size = 3,
+                               stride      = 2,
+                               padding     = 1)
+        self.lrelu1 = nn.LeakyReLU(inplace=True)     
+        #[112x112]          
+        
+        self.conv2 = nn.Conv2d(in_channels = 64,
+                               out_channels= 128,
+                               kernel_size = 3,
+                               stride      = 2,
+                               padding     = 1)
+        self.bn_2   = nn.BatchNorm2d(num_features=128)
+        self.lrelu2 = nn.LeakyReLU(inplace=True)
+        #[56x56] 
+
+        self.conv3 = nn.Conv2d(in_channels = 128,
+                               out_channels= 256,
+                               kernel_size = 3,
+                               stride      = 1,
+                               padding     = 1)
+        self.bn_3   = nn.BatchNorm2d(num_features=256)
+        self.lrelu3 = nn.LeakyReLU(inplace=True)
+        #[28x28]
+
+        self.conv4 = nn.Conv2d(in_channels = 256,
+                               out_channels= 512,
+                               kernel_size = 3,
+                               stride      = 1,
+                               padding     = 1)
+        self.bn_4   = nn.BatchNorm2d(num_features=512)
+        self.lrelu4 = nn.LeakyReLU(inplace=True)
+        #[28x28]
+
+        self.conv5 = nn.Conv2d(in_channels = 512,
+                               out_channels= 1,
+                               kernel_size = 3,
+                               stride      = 1,
+                               padding     = 1)
+        #[28x28]
+    
+    def forward(self, input_pair):
+        out = self.conv1(input_pair)
+        out = self.relu1(out)
+        print(out.shape)
+
+        out = self.conv2(out)
+        out = self.bn_2(out)
+        out = self.relu2(out)
+        print(out.shape)
+
+        out = self.conv3(out)
+        out = self.bn_3(out)
+        out = self.relu3(out)
+        print(out.shape)
+
+        out = self.conv4(out)
+        out = self.bn_4(out)
+        out = self.relu4(out)
+        print(out.shape)
+
+        out = self.conv5(out)
+        print(out.shape)
+
+        return out

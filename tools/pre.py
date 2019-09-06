@@ -48,7 +48,6 @@ def random_crop(img, crop_size, wrand, hrand):
     return img
 
 def get_array(im_list, mode, SIZE=None):
-
     ambnt_list = []
     flash_list = []
 
@@ -87,9 +86,6 @@ def get_array(im_list, mode, SIZE=None):
         ambnt_list.append(img_a_out)
         flash_list.append(img_f_out)
 
-        #n_pairs+=1
-    #    print("\rreading data {:3.1f}%".format(100.0*(n_pairs/list_size)), end=' '*4)
-    #print("\rreading data 100.0% ", end=' '*4)
     return ambnt_list, flash_list
 
 def read_data(path, mode):

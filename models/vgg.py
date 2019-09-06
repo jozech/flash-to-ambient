@@ -69,13 +69,9 @@ class vgg19_encoder(nn.Module):
         self.relu4_1  = nn.ReLU(inplace=True)    # [28x28]
 
     def forward(self,x):
-        #out = self.conv0(x)
-
-        #print(x.shape)
         out = self.pad1_1(x)
         out = self.conv1_1(out)
         out = self.relu1_1(out)
-        #print(out.shape)
 
         if self.level < 2: 
             return out
@@ -83,15 +79,12 @@ class vgg19_encoder(nn.Module):
         out   = self.pad1_2(out)
         out   = self.conv1_2(out)
         pool1 = self.relu1_2(out)
-        #print(out.shape)
 
         out, pool1_idx = self.maxpool1(pool1)
-        #print(out.shape)
 
         out = self.pad2_1(out)
         out = self.conv2_1(out)
         out = self.relu2_1(out)
-        #print(out.shape)
 
         if self.level < 3: 
             return out, pool1_idx, poo1.size()
@@ -99,15 +92,12 @@ class vgg19_encoder(nn.Module):
         out   = self.pad2_2(out)
         out   = self.conv2_2(out)
         pool2 = self.relu2_2(out)
-        #print(out.shape)
 
         out, pool2_idx = self.maxpool2(pool2)
-        #print(out.shape)
 
         out = self.pad3_1(out)
         out = self.conv3_1(out)
         out = self.relu3_1(out)
-        #print(out.shape)
 
         if self.level < 4:
             return out, pool1_idx, pool1.size(), pool2_idx, pool2.size()
@@ -115,31 +105,24 @@ class vgg19_encoder(nn.Module):
         out = self.pad3_2(out)
         out = self.conv3_2(out)
         out = self.relu3_2(out)
-        #print(out.shape)
 
         out = self.pad3_3(out)
         out = self.conv3_3(out)
         out = self.relu3_3(out)
-        #print(out.shape)
 
         out = self.pad3_4(out)
         out = self.conv3_4(out)
         pool3 = self.relu3_4(out)
-        #print(out.shape)
 
         out, pool3_idx = self.maxpool3(pool3)
-        #print(out.shape)
 
         out = self.pad4_1(out)
         out = self.conv4_1(out)
         out = self.relu4_1(out)
-        #print(out.shape)
 
         return out, pool1_idx, pool1.size(), pool2_idx, pool2.size(), pool3_idx, pool3.size()
 
     def forward_multiple(self, x):
-        #out = self.conv0(x)
-
         out = self.pad1_1(x)
         out = self.conv1_1(out)
         out = self.relu1_1(out)
@@ -354,18 +337,10 @@ class vgg19_decoder(nn.Module):
                 out4, 
                 out3,
                 out2,
-                out1,
-                pool1_idx =None, 
-                pool1_size=None,
-                pool2_idx =None,
-                pool2_size=None,
-                pool3_idx =None,
-                pool3_size=None
+                out1
                 ):
 
         out = out4
-        #print(out.shape)
-        #print(out3.shape)
 
         if self.level > 3:
             out = self.pad4_1(out)
@@ -374,7 +349,6 @@ class vgg19_decoder(nn.Module):
             #print(out.shape)
             
             out = self.unconv3(out, output_size=out3.size())
-            #print(out.shape)
             out = torch.cat((out,out3), dim=1)
             #print(out.shape, 'cat')
 
@@ -399,9 +373,7 @@ class vgg19_decoder(nn.Module):
             out = self.relu3_1(out)
             #print(out.shape)
 
-            #out = self.unpool2(out, pool2_idx, output_size=pool2_size)
             out = self.unconv2(out, output_size=out2.size())
-            #print(out.shape)
             out = torch.cat((out,out2), dim=1)
             #print(out.shape, 'cat')
 
@@ -416,11 +388,10 @@ class vgg19_decoder(nn.Module):
             out = self.relu2_1(out)
             #print(out.shape)
 
-            #out = self.unpool1(out, pool1_idx, output_size=pool1_size)
             out = self.unconv1(out, output_size=out1.size())
-            #print(out.shape)
             out = torch.cat((out,out1), dim=1)
             #print(out.shape, 'cat')
+
             out = self.pad1_2(out)
             out = self.conv1_2(out)
             out = self.relu1_2(out)
@@ -642,7 +613,7 @@ class vgg16_encoder(nn.Module):
         out = self.conv5_3(out)
         out = self.relu5_3(out)
 
-        layers['z'] = z
+        layers['z'] = out
 
         return layers
 
@@ -663,16 +634,21 @@ class vgg16_decoder(nn.Module):
                                               bias=True, 
                                               dilation=1, 
                                               padding_mode='zeros')
+            self.bn4_cat1 = nn.BatchNorm2d(512)
+            self.bn4_cat2 = nn.BatchNorm2d(512)
 
             self.conv4_3 = nn.Conv2d(1024,512,3,1,1)
+            self.bn4_3   = nn.BatchNorm2d(512)
             self.drop4_3 = nn.Dropout(p=prob, inplace=False)
-            self.relu4_3 = nn.LeakyReLU(inplace=True)
+            self.relu4_3 = nn.ReLU(inplace=True)
             self.conv4_2 = nn.Conv2d(512,512,3,1,1)
+            self.bn4_2   = nn.BatchNorm2d(512)
             self.drop4_2 = nn.Dropout(p=prob, inplace=False)
-            self.relu4_2 = nn.LeakyReLU(inplace=True)
+            self.relu4_2 = nn.ReLU(inplace=True)
             self.conv4_1 = nn.Conv2d(512,256,3,1,1)
+            self.bn4_1   = nn.BatchNorm2d(256)
             self.drop4_1 = nn.Dropout(p=prob, inplace=False)
-            self.relu4_1 = nn.LeakyReLU(inplace=True)
+            self.relu4_1 = nn.ReLU(inplace=True)
 
         # [28x28]
         if level > 3:
@@ -687,16 +663,21 @@ class vgg16_decoder(nn.Module):
                                               bias=True, 
                                               dilation=1, 
                                               padding_mode='zeros')
+            self.bn3_cat1 = nn.BatchNorm2d(256)
+            self.bn3_cat2 = nn.BatchNorm2d(256)
 
             self.conv3_3 = nn.Conv2d(512,256,3,1,1)
+            self.bn3_3   = nn.BatchNorm2d(256)
             self.drop3_3 = nn.Dropout(p=prob, inplace=False)
-            self.relu3_3 = nn.LeakyReLU(inplace=True)
+            self.relu3_3 = nn.ReLU(inplace=True)
             self.conv3_2 = nn.Conv2d(256,256,3,1,1)
+            self.bn3_2   = nn.BatchNorm2d(256)
             self.drop3_2 = nn.Dropout(p=prob, inplace=False)
-            self.relu3_2 = nn.LeakyReLU(inplace=True)
+            self.relu3_2 = nn.ReLU(inplace=True)
             self.conv3_1 = nn.Conv2d(256,128,3,1,1)
+            self.bn3_1   = nn.BatchNorm2d(128)
             self.drop3_1 = nn.Dropout(p=prob, inplace=False)
-            self.relu3_1 = nn.LeakyReLU(inplace=True)
+            self.relu3_1 = nn.ReLU(inplace=True)
 
         # [56x56]
         if level > 2:
@@ -711,11 +692,15 @@ class vgg16_decoder(nn.Module):
                                               bias=True, 
                                               dilation=1, 
                                               padding_mode='zeros')
+            self.bn2_cat1 = nn.BatchNorm2d(128)
+            self.bn2_cat2 = nn.BatchNorm2d(128)
 
             self.conv2_2 = nn.Conv2d(256,128,3,1,1)
-            self.relu2_2 = nn.LeakyReLU(inplace=True)
+            self.bn2_2   = nn.BatchNorm2d(128)
+            self.relu2_2 = nn.ReLU(inplace=True)
             self.conv2_1 = nn.Conv2d(128,64,3,1,1)
-            self.relu2_1 = nn.LeakyReLU(inplace=True)
+            self.bn2_1   = nn.BatchNorm2d(64)
+            self.relu2_1 = nn.ReLU(inplace=True)
 
         # [112x112]
         if level > 1:
@@ -730,11 +715,15 @@ class vgg16_decoder(nn.Module):
                                               bias=True, 
                                               dilation=1, 
                                               padding_mode='zeros')
+            self.bn1_cat1 = nn.BatchNorm2d(64)
+            self.bn1_cat2 = nn.BatchNorm2d(64)
 
             self.conv1_2 = nn.Conv2d(128,64,3,1,1)
-            self.relu1_2 = nn.LeakyReLU(inplace=True)
+            self.bn1_2   = nn.BatchNorm2d(64)
+            self.relu1_2 = nn.ReLU(inplace=True)
             self.conv1_1 = nn.Conv2d(64,3,3,1,1)
-            self.relu1_1 = nn.LeakyReLU(inplace=True)
+            #self.bn1_1   = nn.BatchNorm2d(3)
+            #self.relu1_1 = nn.ReLU(inplace=True)
 
         # [224x224]
         if level > 0:
@@ -751,16 +740,23 @@ class vgg16_decoder(nn.Module):
             pool4      = layers['pool4']
             
             out = self.unpool4(out, pool4_idx, output_size=pool4_size)  # [None, 512,28,28]
+            out   = self.bn4_cat1(out)
+            pool4 = self.bn4_cat2(pool4)
             out = torch.cat((out,pool4), dim=1)                         # [None,1024,28,28]
-
+            
             out = self.conv4_3(out)
-            out = self.drop4_3(out)
+            #out = self.bn4_3(out)
+            #out = self.drop4_3(out)
             out = self.relu4_3(out)
+
             out = self.conv4_2(out)
-            out = self.drop4_2(out)
+            #out = self.bn4_2(out)
+            #out = self.drop4_2(out)
             out = self.relu4_2(out)
+            
             out = self.conv4_1(out)
-            out = self.drop4_1(out)
+            #out = self.bn4_1(out)
+            #out = self.drop4_1(out)
             out = self.relu4_1(out)
 
         if self.level > 3:
@@ -769,16 +765,23 @@ class vgg16_decoder(nn.Module):
             pool3      = layers['pool3']
 
             out = self.unpool3(out, pool3_idx, output_size=pool3_size)
+            out   = self.bn3_cat1(out)
+            pool3 = self.bn3_cat2(pool3)
             out = torch.cat((out,pool3), dim=1)
 
             out = self.conv3_3(out)
-            out = self.drop3_3(out)
+            #out = self.bn3_3(out)
+            #out = self.drop3_3(out)
             out = self.relu3_3(out)
+
             out = self.conv3_2(out)
-            out = self.drop3_2(out)
+            #out = self.bn3_2(out)
+            #out = self.drop3_2(out)
             out = self.relu3_2(out)
+            
             out = self.conv3_1(out)
-            out = self.drop3_1(out)
+            #out = self.bn3_1(out)
+            #out = self.drop3_1(out)
             out = self.relu3_1(out)
 
         #print(out.shape)
@@ -788,11 +791,16 @@ class vgg16_decoder(nn.Module):
             pool2      = layers['pool2']
 
             out = self.unpool2(out, pool2_idx, output_size=pool2_size)
+            out   = self.bn2_cat1(out)
+            pool2 = self.bn2_cat2(pool2)
             out = torch.cat((out,pool2), dim=1)
 
             out = self.conv2_2(out)
+            #out = self.bn2_2(out)
             out = self.relu2_2(out)
+
             out = self.conv2_1(out)
+            #out = self.bn2_1(out)
             out = self.relu2_1(out)
 
         #print(out.shape)
@@ -802,12 +810,18 @@ class vgg16_decoder(nn.Module):
             pool1      = layers['pool1']
 
             out = self.unpool1(out, pool1_idx, output_size=pool1_size)
+            out   = self.bn1_cat1(out)
+            pool1 = self.bn1_cat2(pool1)
+
             out = torch.cat((out,pool1), dim=1)
 
             out = self.conv1_2(out)
+            #out = self.bn1_2(out)
             out = self.relu1_2(out)
+
             out = self.conv1_1(out)
-            out = self.relu1_1(out)
+            #out = self.bn1_1(out)
+            #out = self.relu1_1(out)
 
         #print(out.shape)
         if self.level > 0:
@@ -815,71 +829,75 @@ class vgg16_decoder(nn.Module):
 
         return out
 
-    def forward_concat(self, 
-                z, 
-                pool4,
-                pool3,
-                pool2,
-                pool1
-                ):
-
-        out = z
-        #print(out.shape,'dec - ', pool4_size)
+    def forward_deconv(self, layers):
+        out = layers['z']
         if self.level > 4:
-            #out = self.unpool4(out, pool4_idx, output_size=pool4_size)
-            #print(out.shape, pool4.size())
-            out = self.unconv4(out, output_size=pool4.size())
-            out = torch.cat((out,pool4), dim=1)
-            #print(out.shape, '--')
+            pool4 = layers['pool4']
+            out   = self.unconv4(out, output_size=pool4.size())
+            out   = self.bn4_cat1(out)
+            pool4 = self.bn4_cat2(pool4)
+            out   = torch.cat((out,pool4), dim=1)
+
             out = self.conv4_3(out)
-            out = self.drop4_3(out)
+            out = self.bn4_3(out)
+            #out = self.drop4_3(out)
             out = self.relu4_3(out)
             out = self.conv4_2(out)
-            out = self.drop4_2(out)
+            out = self.bn4_2(out)
+            #out = self.drop4_2(out)
             out = self.relu4_2(out)
             out = self.conv4_1(out)
-            out = self.drop4_1(out)
+            out = self.bn4_1(out)
+            #out = self.drop4_1(out)
             out = self.relu4_1(out)
 
-        #print(out.shape,'dec - ', pool3_size)
         if self.level > 3:
-            #out = self.unpool3(out, pool3_idx, output_size=pool3_size)
-            out = self.unconv3(out, output_size=pool3.size())
-            out = torch.cat((out,pool3), dim=1)
+            pool3 = layers['pool3']
+            out   = self.unconv3(out, output_size=pool3.size())
+            out   = self.bn3_cat1(out)
+            pool3 = self.bn3_cat2(pool3)
+            out   = torch.cat((out,pool3), dim=1)
 
             out = self.conv3_3(out)
-            out = self.drop3_3(out)
+            out = self.bn3_3(out)
+            #out = self.drop3_3(out)
             out = self.relu3_3(out)
             out = self.conv3_2(out)
-            out = self.drop3_2(out)
+            out = self.bn3_2(out)
+            #out = self.drop3_2(out)
             out = self.relu3_2(out)
             out = self.conv3_1(out)
-            out = self.drop3_1(out)
+            out = self.bn3_1(out)
+            #out = self.drop3_1(out)
             out = self.relu3_1(out)
 
-        #print(out.shape)
         if self.level > 2:
-            #out = self.unpool2(out, pool2_idx, output_size=pool2_size)
-            out = self.unconv2(out, output_size=pool2.size())
-            out = torch.cat((out,pool2), dim=1)
+            pool2 = layers['pool2']
+            out   = self.unconv2(out, output_size=pool2.size())
+            out   = self.bn2_cat1(out)
+            pool2 = self.bn2_cat2(pool2)
+            out   = torch.cat((out,pool2), dim=1)
 
             out = self.conv2_2(out)
+            out = self.bn2_2(out)
             out = self.relu2_2(out)
             out = self.conv2_1(out)
+            out = self.bn2_1(out)
             out = self.relu2_1(out)
 
-        #print(out.shape)
         if self.level > 1:
-            #out = self.unpool1(out, pool1_idx, output_size=pool1_size)
-            out = self.unconv1(out, output_size=pool1.size())
-            out = torch.cat((out,pool1), dim=1)
+            pool1 = layers['pool1']
+            out   = self.unconv1(out, output_size=pool1.size())
+            out   = self.bn1_cat1(out)
+            pool1 = self.bn1_cat2(pool1)
+            out   = torch.cat((out,pool1), dim=1)
 
             out = self.conv1_2(out)
+            out = self.bn1_2(out)
             out = self.relu1_2(out)
             out = self.conv1_1(out)
-            out = self.relu1_1(out)
+            #out = self.relu1_1(out)
 
-        #print(out.shape)
         if self.level > 0:
             out = self.tanh0(out)
 

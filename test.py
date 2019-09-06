@@ -1,6 +1,6 @@
 import numpy as np
 
-from models.vgg_ed_model import vgg_encoder_decoder
+from models.end2end import EDNet
 from options.base import baseOpt
 
 from tools.pre import read_data, get_array
@@ -28,7 +28,7 @@ def test_op(model, opts):
 
 if __name__ == "__main__":
     opts  = baseOpt().parse()
-    model = vgg_encoder_decoder(opts, isTrain=False)
+    model = EDNet(opts, isTrain=False)
     model.load_model(opts.load_epoch)
 
     test_op(model, opts)

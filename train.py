@@ -1,4 +1,4 @@
-from models.vgg_ed_model import vgg_encoder_decoder
+from models.end2end import EDNet
 from options.base import baseOpt
 
 from tools.pre import read_data, get_array
@@ -33,6 +33,6 @@ def train_op(model, opts):
 
 if __name__ == '__main__':
     opts  = baseOpt().parse()
-    model = vgg_encoder_decoder(opts)
+    model = EDNet(opts)
     
     train_op(model, opts)
