@@ -24,6 +24,55 @@ Figure 1. Some results of our model based on the pix2pix framework. Flash image 
 * Linux 
 * Python 3.6.8
 * torch 1.2.0
-* torchvision 0.4.0
+* NVIDIA GPU + CUDA CuDNN
 
+## Getting started
+
+### Installation
+
+* Clone this repo
+
+```
+git clone https://github.com/jozech/flash-to-ambient.git
+cd flash-to-ambient
+```
+* Download the dataset
+
+```
+python3 download_database.py
+```
+
+If you have problems with the script above, you can download it [here](https://drive.google.com/open?id=1Z7Wy9Hj5HjVD8P-zVkw55_BISQ7jQSFg), then click on the download button. If you use the external url, you have to put the *DATASET_LR* folder inside a directory called *datasets*.
+
+    ├─ flash-to-ambient/
+       ├─ datasets/
+            ├─ DATASET_LR/ 
+       ├─ train.py
+       ├─ test.py
+       ├─ download_database.py
+       ├─ imgs/
+       ├─ models/
+       ├─ tools/
+       └─ options/
+
+* You can generate the results for the test dataset, for 1000 epochs of training.
+```
+python3 download_model.py
+python3 test.py --load_epoch=1000
+```
+
+* Train our model, with deafult hyperparameters.
+```
+python3 train.py
+```
+
+* Train our model, and save the model each 50 epochs.
+```
+python3 train.py --save_epoch=50
+```
+If you want to know more about the hyperparameters, see *options/base.py*.
+
+### Acknowledgements
+
+Our code is inspire by [PhotoWCT](https://github.com/NVIDIA/FastPhotoStyle).
 
