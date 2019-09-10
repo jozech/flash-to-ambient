@@ -4,7 +4,7 @@ In the procces of generating digital images from scences sometimes the level of 
 
 ![Screenshot](imgs/generator-model.png)
 
-The architecture has two CNNs, the generator, generates synthetic ambient images, and the discriminator network classifies if their input images are authentic. The generator network has as an encoder the [VGG-16](https://arxiv.org/abs/1409.1556). The generator models the translation from flash images(<img src="https://latex.codecogs.com/gif.latex?I_f" /> ) to synthetic ambient images(*Ia*). The real image(*Ia*) is classified by the discriminator as a real, while the synthetic image($\hat{I}_a$) is classified by the discriminator as a fake. The discriminator is the same proposed by Isola et al. in the [pix2pix](https://arxiv.org/abs/1611.07004) framework.
+The architecture has two CNNs, the generator, generates synthetic ambient images, and the discriminator network classifies if their input images are authentic. The generator network has as an encoder the [VGG-16](https://arxiv.org/abs/1409.1556). The generator models the translation from flash images(<img src="https://latex.codecogs.com/gif.latex?I_f" style="margin bottomp:3px;"/> ) to synthetic ambient images(*Ia*). The real image(*Ia*) is classified by the discriminator as a real, while the synthetic image($\hat{I}_a$) is classified by the discriminator as a fake. The discriminator is the same proposed by Isola et al. in the [pix2pix](https://arxiv.org/abs/1611.07004) framework.
 
 ## Qualitative results
 
