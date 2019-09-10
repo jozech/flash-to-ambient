@@ -69,5 +69,8 @@ if __name__ == '__main__':
     
     # Build model, and run test
     model = cGAN(opts)
+
+    # Uncomment for loading a model
     #model.load_model(opts.load_epoch)
+    
     train_op(model, opts)

@@ -23,7 +23,7 @@ Figure 1. Some results of our model based on the pix2pix framework. Flash image 
 
 * Linux 
 * Python 3.6.8
-* torch 1.2.0
+* PyTorch 1.2.0
 * NVIDIA GPU + CUDA CuDNN
 
 ## Getting started
