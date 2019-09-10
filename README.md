@@ -4,7 +4,7 @@ In the procces of generating digital images from scences sometimes the level of 
 
 ![Screenshot](imgs/generator-model.png)
 
-The architecture has two CNNs, the generator, generates synthetic ambient images, and the discriminator network classifies if their input images are authentic. The generator network has as an encoder the [VGG-16](https://arxiv.org/abs/1409.1556). The generator models the translation from flash images to synthetic ambient images. The real image is classified by the discriminator as a real, while the synthetic image is classified by the discriminator as a fake. The discriminator is the same proposed by Isola et al. in the [pix2pix](https://arxiv.org/abs/1611.07004) framework.
+The architecture has two CNNs, the generator, generates synthetic ambient images, and the discriminator network classifies if their input images are authentic. The generator network has as an encoder part the [VGG-16](https://arxiv.org/abs/1409.1556) architecture. The generator models the translation from flash images to synthetic ambient images. The real image is classified by the discriminator as a real, while the synthetic image is classified by the discriminator as a fake. The discriminator is the same proposed by Isola et al. in the [pix2pix](https://arxiv.org/abs/1611.07004) framework.
 
 ## Qualitative results
 
@@ -74,5 +74,5 @@ If you want to know more about the hyperparameters, see *options/base.py*.
 
 ### Acknowledgements
 
-Our code is inspire by [PhotoWCT](https://github.com/NVIDIA/FastPhotoStyle).
+Some parts of our code is inspire by [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix).
 
