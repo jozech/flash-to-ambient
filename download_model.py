@@ -4,8 +4,8 @@ import zipfile
 
 from sys import stdout
 
-ID = '1Z7Wy9Hj5HjVD8P-zVkw55_BISQ7jQSFg'
-DEST = 'DATASET_LR.zip'
+ID = '15-oPZAxzATu6l3s2bDr79OQe6qWwTpEC'
+DEST = 'model-1600.zip'
 
 def confirm_token(resp):
     for key, value in resp.cookies.items():
@@ -45,15 +45,15 @@ def download_drive_file(id, dest):
     save(dest, resp, id, curr_download_size)
     print('Done.')
 
-    if not os.path.exists('datasets/'):
-        os.makedirs('datasets/')
+    if not os.path.exists('checkpoints/'):
+        os.makedirs('checkpoints/')
 
     try:
         print('Unzipping...', end='')
         stdout.flush()
 
         with zipfile.ZipFile(dest, 'r') as z:
-            z.extractall('datasets')
+            z.extractall('checkpoints')
         print('Done.')
     except zipfile.BadZipfile:
         warnings.warn('Ignoring `unzip` since "{}" does not look like a valid zip file'.format(file_id))
