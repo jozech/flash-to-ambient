@@ -10,12 +10,12 @@ The architecture has two CNNs, the generator, generates synthetic ambient images
 
 | Flash image | Synthetic ambient image | Ambient image |
 |:---:|:---:|:---:|
-|![](imgs/flash_it_105.png | width=100)|![Synthetic ambient image](imgs/fake_it_105.png)|![Ambient image](imgs/real_it_105.png)|
+|![](imgs/flash_it_105.png)|![Synthetic ambient image](imgs/fake_it_105.png)|![Ambient image](imgs/real_it_105.png)|
 
 <p align="left">
-    <img src="imgs/flash_it_105.png" alt="drawing" style="width:200px; margin:1px;"/>
-    <img src="imgs/fake_it_105.png" alt="drawing" style="width:200px; margin:1px;"/>
-    <img src="imgs/real_it_105.png" alt="drawing" style="width:200px; margin:1px;"/><br>
+    <img src="imgs/flash_it_105.png" alt="drawing" style="width:100px; margin:1px;"/>
+    <img src="imgs/fake_it_105.png" alt="drawing" style="width:100px; margin:1px;"/>
+    <img src="imgs/real_it_105.png" alt="drawing" style="width:100px; margin:1px;"/><br>
 </p>
 <img src="imgs/flash_it_89.png" alt="drawing" style="width:200px; margin:1px; float:left;"/>
 <img src="imgs/fake_it_89.png" alt="drawing" style="width:200px; margin:1px;"/>
