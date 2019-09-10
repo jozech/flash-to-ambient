@@ -42,7 +42,7 @@ cd flash-to-ambient
 python3 download_database.py
 ```
 
-If you have problems with the script above, you can download it [here](https://drive.google.com/open?id=1Z7Wy9Hj5HjVD8P-zVkw55_BISQ7jQSFg), then click on the download button. If you use the external url, you have to put the *DATASET_LR* folder inside a directory called *datasets*. The dataset is a reduced set of [FAID](http://yaksoy.github.io/faid/), because in the entire FAID there are ambient images with low illumination, artifacts, etc. 
+If you have problems with the script above, you can download it [here](https://drive.google.com/open?id=1Z7Wy9Hj5HjVD8P-zVkw55_BISQ7jQSFg), then click on the download button. If you use the external url, you have to put the *DATASET_LR* folder inside a directory called *datasets*. The dataset is a reduced set of [FAID](http://yaksoy.github.io/faid/), because in the entire FAID there are ambient images with low illumination, artifacts, etc. We also resuced the resolution to 320x240 for our experiments.
 
     ├─ flash-to-ambient/
        ├─ datasets/
