@@ -24,6 +24,9 @@ from tools.pre import read_data, get_array
 from tools.post import PSNR
 
 def test_op(model, opts):
+    if not os.path.exists('results/'):
+        os.makedirs('results/')
+
     # Make a list of pairs of ambient and flash image filenames
     imgs_list = read_data(path=opts.dataset_path, mode='test')
     # Get array of the images
