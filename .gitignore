@@ -1,5 +1,4 @@
 results/
-*.png
 tmp/
 */**/__pycache__
 */*.pyc
