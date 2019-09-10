@@ -11,32 +11,10 @@ The architecture has two CNNs, the generator, generates synthetic ambient images
 | Flash image | Synthetic ambient image | Ambient image |
 |:---:|:---:|:---:|
 |![](imgs/flash_it_105.png)|![Synthetic ambient image](imgs/fake_it_105.png)|![Ambient image](imgs/real_it_105.png)|
-
-<p align="left">
-    <img src="imgs/flash_it_105.png" alt="drawing" style="width:100px; margin:1px;"/>
-    <img src="imgs/fake_it_105.png" alt="drawing" style="width:100px; margin:1px;"/>
-    <img src="imgs/real_it_105.png" alt="drawing" style="width:100px; margin:1px;"/><br>
-</p>
-<img src="imgs/flash_it_89.png" alt="drawing" style="width:200px; margin:1px; float:left;"/>
-<img src="imgs/fake_it_89.png" alt="drawing" style="width:200px; margin:1px;"/>
-<img src="imgs/real_it_89.png" alt="drawing" style="width:200px; margin:1px;"/><br>
-
-<img src="imgs/flash_it_112.png" alt="drawing" style="width:200px; margin:1px; float:left;"/>
-<img src="imgs/fake_it_112.png" alt="drawing" style="width:200px; margin:1px;"/>
-<img src="imgs/real_it_112.png" alt="drawing" style="width:200px; margin:1px;"/><br>
-
-<img src="imgs/flash_it_4.png" alt="drawing" style="width:200px; margin:1px; float:left;"/>
-<img src="imgs/fake_it_4.png" alt="drawing" style="width:200px; margin:1px;"/>
-<img src="imgs/real_it_4.png" alt="drawing" style="width:200px; margin:1px;"/><br>
-
-<img src="imgs/flash_it_15.png" alt="drawing" style="width:200px; margin:1px; float:left;"/>
-<img src="imgs/fake_it_15.png" alt="drawing" style="width:200px; margin:1px;"/>
-<img src="imgs/real_it_15.png" alt="drawing" style="width:200px; margin:1px;"/><br>
-
-<img src="imgs/flash_it_40.png" alt="drawing" style="width:200px; margin:1px; float:left;"/>
-<img src="imgs/fake_it_40.png" alt="drawing" style="width:200px; margin:1px;"/>
-<img src="imgs/real_it_40.png" alt="drawing" style="width:200px; margin:1px;"/><br>
-
-
+|![](imgs/flash_it_89.png)|![Synthetic ambient image](imgs/fake_it_89.png)|![Ambient image](imgs/real_it_89.png)|
+|![](imgs/flash_it_112.png)|![Synthetic ambient image](imgs/fake_it_112.png)|![Ambient image](imgs/real_it_112.png)|
+|![](imgs/flash_it_4.png)|![Synthetic ambient image](imgs/fake_it_4.png)|![Ambient image](imgs/real_it_4.png)|
+|![](imgs/flash_it_15.png)|![Synthetic ambient image](imgs/fake_it_15.png)|![Ambient image](imgs/real_it_15.png)|
+|![](imgs/flash_it_40.png)|![Synthetic ambient image](imgs/fake_it_40.png)|![Ambient image](imgs/real_it_40.png)|
 
 Figure 1. Some results of our model based on the pix2pix framework. Flash image (left), image generated through the generator network (middle) and the ground truth, the ambient image(right).
