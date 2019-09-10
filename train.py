@@ -32,7 +32,7 @@ def train_op(model, opts):
     imgs_list  = read_data(path=opts.dataset_path, mode='train')
     train_size = len(imgs_list)
 
-    for ep in range(701, opts.epochs+1):
+    for ep in range(1, opts.epochs+1):
         start = time.time()
         # Get array of the images, make data augmentation and random shuffle
         ambnt_imgs, flash_imgs = get_array(imgs_list, mode='train', MIN_SIZE=opts.load_size, SIZE=opts.crop_size)
@@ -69,5 +69,5 @@ if __name__ == '__main__':
     
     # Build model, and run test
     model = cGAN(opts)
-    model.load_model(opts.load_epoch)
+    #model.load_model(opts.load_epoch)
     train_op(model, opts)
