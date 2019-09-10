@@ -13,7 +13,7 @@ Use:
 See options/base.py for more details about more information of all the default parameters.
 """
 
-
+import os
 import numpy as np
 
 from models.end2end import EDNet
