@@ -4,7 +4,7 @@ In the process of generating digital images from scenes sometimes the level of l
 
 ![Screenshot](imgs/generator-model.png)
 
-The architecture has two CNNs, the generator, generates synthetic ambient images, and the discriminator network classifies if their input images are authentic. The generator network has as an encoder part all the convolutional layers of the [VGG-16](https://arxiv.org/abs/1409.1556) architecture pre-trained on ImageNet, and decoder part is a simetric respect to the encoder. The generator models the translation from flash images to synthetic ambient images. Ambient images from the training set is classified by the discriminator as a real, while the synthetic ambient image is classified by the discriminator as a fake. The discriminator is based on Isola et al. in the [pix2pix](https://arxiv.org/abs/1611.07004) framework.
+The architecture has two CNNs, the generator, generates synthetic ambient images, and the discriminator network classifies if their input images are authentic. The generator network has as an encoder part all the convolutional layers of the [VGG-16](https://arxiv.org/abs/1409.1556) architecture pre-trained on ImageNet, and decoder part is symmetric respect to the encoder. The generator models the translation from flash images to synthetic ambient images. Ambient images from the training set are classified by the discriminator as a real, while the synthetic ambient image is classified by the discriminator as a fake. The discriminator is based on Isola et al. in the [pix2pix](https://arxiv.org/abs/1611.07004) framework.
 
 ## Qualitative results
 
@@ -18,7 +18,7 @@ The architecture has two CNNs, the generator, generates synthetic ambient images
 |![](imgs/flash_it_40.png)|![Synthetic ambient image](imgs/fake_it_40.png)|![Ambient image](imgs/real_it_40.png)|
 |![](imgs/flash_it_113.png)|![Synthetic ambient image](imgs/fake_it_113.png)|![Ambient image](imgs/real_it_113.png)|
 
-Figure 1. Some results of our model based on the pix2pix framework. Flash images (left), images generated through the generator network (middle) and the ground truth, the ambient image(right).
+Figure 1. Some results of our model based on the pix2pix framework. Flash images (left), images generated through the generator network (middle) and the ground truth, the ambient image(right). These results are obtained after 700 epochs with the default learning rates, 2e-4(generator) and 2e-5(discriminator), and then reducing both learning rates by a factor of 10 to train until 1600 epochs.
 
 ## Prerequisites
 
@@ -48,18 +48,18 @@ or
 python3 download_database.py
 ```
 
-If you have problems with the script above, you can download it [here](https://drive.google.com/open?id=1Z7Wy9Hj5HjVD8P-zVkw55_BISQ7jQSFg), then click on the download button. If you use the external URL, you have to put the *'DATASET_LR'* folder inside a directory called *'datasets'*. The dataset is a reduced set of [FAID](http://yaksoy.github.io/faid/) because in the entire FAID there are ambient images with low illumination, artifacts, etc. All images was reduced to 320x240 resolution for our experiments.
+If you have problems with the script above, you can download it [here](https://drive.google.com/open?id=1Z7Wy9Hj5HjVD8P-zVkw55_BISQ7jQSFg), then click on the download button. If you use the external URL, you have to put the *'DATASET_LR'* folder inside a directory called *'datasets'*. The dataset is a reduced set of [FAID](http://yaksoy.github.io/faid/) because in the entire FAID there are ambient images with low illumination, artifacts, etc. All images were reduced to 320x240 resolution for our experiments.
 
-    ├─ flash-to-ambient/
-       ├─ datasets/
-            ├─ DATASET_LR/ 
-       ├─ train.py
-       ├─ test.py
-       ├─ download_database.py
-       ├─ imgs/
-       ├─ models/
-       ├─ tools/
-       └─ options/
+ ├─ flash-to-ambient/
+ ├─ datasets/
+ ├─ DATASET_LR/ 
+ ├─ train.py
+ ├─ test.py
+ ├─ download_database.py
+ ├─ imgs/
+ ├─ models/
+ ├─ tools/
+ └─ options/
 
 * You can generate the results for the test dataset, for 1600 epochs of training.
 ```
