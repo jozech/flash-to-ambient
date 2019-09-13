@@ -28,6 +28,8 @@ import numpy as np
 import time
 
 def train_op(model, opts):
+    if not os.path.exists('checkpoints'):
+        os.makedirs('checkpoints')
     # Make a list of pairs of ambient and flash image filenames
     imgs_list  = read_data(path=opts.dataset_path, mode='train')
     train_size = len(imgs_list)
