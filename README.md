@@ -37,7 +37,7 @@ Figure 1. Some results of our model based on the pix2pix framework. Flash images
 git clone https://github.com/jozech/flash-to-ambient.git
 cd flash-to-ambient
 ```
-* Download the dataset
+* Download the dataset virtual environment
 
 ```
 python download_database.py
