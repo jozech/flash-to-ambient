@@ -39,6 +39,11 @@ cd flash-to-ambient
 * Download the dataset
 
 ```
+python download_database.py
+```
+or
+
+```
 python3 download_database.py
 ```
 
@@ -55,18 +60,28 @@ If you have problems with the script above, you can download it [here](https://d
        ├─ tools/
        └─ options/
 
-* You can generate the results for the test dataset, for 1000 epochs of training.
+* You can generate the results for the test dataset, for 1600 epochs of training.
+```
+python download_model.py
+python test.py --load_epoch=1600
+```
+or
+
 ```
 python3 download_model.py
-python3 test.py --load_epoch=1000
+python3 test.py --load_epoch=1600
 ```
 
 * Train our model, with default hyperparameters.
 ```
-python3 train.py
+python train.py
 ```
 
 * Train our model, and save the model every 50 epochs.
+```
+python train.py --save_epoch=50
+```
+or
 ```
 python3 train.py --save_epoch=50
 ```
