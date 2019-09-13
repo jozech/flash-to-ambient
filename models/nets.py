@@ -135,6 +135,12 @@ class vgg16_generator_deconv(nn.Module):
 
 class discriminator(nn.Module):
     def __init__(self):
+        """
+            Discriminator:
+
+            stride  : 2-2-1-1-1
+            channels: 64-128-256-512-1
+        """
         super(discriminator, self).__init__()
         self.conv1 = nn.Conv2d(in_channels = 3,
                                out_channels= 64,
@@ -195,7 +201,6 @@ class discriminator(nn.Module):
         out = self.relu4(out)
 
         out = self.conv5(out)
-
         return out
 
 class GANLoss(nn.Module):

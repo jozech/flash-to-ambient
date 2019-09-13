@@ -56,7 +56,7 @@ def train_op(model, opts):
             loss_dis.append(model.loss_Dis.cpu().detach().numpy())
             print('\riter:{:4d}/{:4d}, loss_batch(L1): {:.4f}, loss_gen: {:.4f}, loss_dis: {:.4f}'.format(int(it+opts.batch_size),train_size,loss_it[-1], loss_gen[-1], loss_dis[-1]), end='')
         end = time.time()
-        print('\repochs: {:4d}, loss_batch(L1):{:.5f}, loss_gen: {:.4f}, loss_dis: {:.4f} in {:3.2f}s'.format(ep, np.mean(loss_it), np.mean(loss_gen), np.mean(loss_dis),(end-start)))
+        print('\repochs: {:4d}, loss_batch(L1):{:.4f}, loss_gen: {:.4f}, loss_dis: {:.4f} in {:3.2f}s'.format(ep, np.mean(loss_it), np.mean(loss_gen), np.mean(loss_dis),(end-start)))
 
         # Save model each {opts.save_epoch} epochs
         if ep % opts.save_epoch == 0: 
