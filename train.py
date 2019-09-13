@@ -26,6 +26,7 @@ from tools.pre import shuffle_data
 
 import numpy as np
 import time
+import os
 
 def train_op(model, opts):
     if not os.path.exists('checkpoints'):
