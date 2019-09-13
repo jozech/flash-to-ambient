@@ -50,16 +50,16 @@ python3 download_database.py
 
 If you have problems with the script above, you can download it [here](https://drive.google.com/open?id=1Z7Wy9Hj5HjVD8P-zVkw55_BISQ7jQSFg), then click on the download button. If you use the external URL, you have to put the *'DATASET_LR'* folder inside a directory called *'datasets'*. The dataset is a reduced set of [FAID](http://yaksoy.github.io/faid/) because in the entire FAID there are ambient images with low illumination, artifacts, etc. All images were reduced to 320x240 resolution for our experiments.
 
- ├─ flash-to-ambient/
- ├─ datasets/
- ├─ DATASET_LR/ 
- ├─ train.py
- ├─ test.py
- ├─ download_database.py
- ├─ imgs/
- ├─ models/
- ├─ tools/
- └─ options/
+     ├─ flash-to-ambient/
+     ├─ datasets/
+     ├─ DATASET_LR/ 
+     ├─ train.py
+     ├─ test.py
+     ├─ download_database.py
+     ├─ imgs/
+     ├─ models/
+     ├─ tools/
+     └─ options/
 
 * You can generate the results for the test dataset, for 1600 epochs of training.
 ```
