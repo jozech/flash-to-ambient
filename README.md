@@ -16,6 +16,7 @@ The architecture has two CNNs, the generator, generates synthetic ambient images
 |![](imgs/flash_it_4.png)|![Synthetic ambient image](imgs/fake_it_4.png)|![Ambient image](imgs/real_it_4.png)|
 |![](imgs/flash_it_15.png)|![Synthetic ambient image](imgs/fake_it_15.png)|![Ambient image](imgs/real_it_15.png)|
 |![](imgs/flash_it_40.png)|![Synthetic ambient image](imgs/fake_it_40.png)|![Ambient image](imgs/real_it_40.png)|
+|![](imgs/flash_it_113.png)|![Synthetic ambient image](imgs/fake_it_113.png)|![Ambient image](imgs/real_it_113.png)|
 
 Figure 1. Some results of our model based on the pix2pix framework. Flash images (left), images generated through the generator network (middle) and the ground truth, the ambient image(right).
 
