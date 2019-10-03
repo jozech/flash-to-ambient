@@ -25,7 +25,6 @@ class vgg16_generator_unpool(nn.Module):
         features_list = list(vgg16.features)
 
         with torch.no_grad():
-            
             # [224x224]
             if self.levels > 1:
                 self.enc5.conv1_1.weight.copy_(features_list[0].weight)
@@ -91,7 +90,7 @@ class vgg16_generator_deconv(nn.Module):
         features_list = list(vgg16.features)
 
         with torch.no_grad():
-            
+
             if self.levels > 0:
                 # [224x224]
                 self.enc5.conv1_1.weight.copy_(features_list[0].weight)
@@ -134,73 +133,66 @@ class vgg16_generator_deconv(nn.Module):
                 self.enc5.conv5_3.bias.copy_(features_list[28].bias)
 
 class discriminator(nn.Module):
-    def __init__(self):
+    def __init__(
+        self, 
+        init_ch    = 64, 
+        ksize      = 3, 
+        down_leves = 3, 
+        deep       = 5,
+        att        = False):
+        
         """
             Discriminator:
 
-            stride  : 2-2-1-1-1
-            channels: 64-128-256-512-1
+            stride  : 2-2-2-1
+            channels: 64-128-256-512
         """
         super(discriminator, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels = 3,
-                               out_channels= 64,
-                               kernel_size = 3,
-                               stride      = 2,
-                               padding     = 1)
-        self.relu1 = nn.LeakyReLU(inplace=True)     
-        #[112x112]          
+
+        seq   = []
+        in_ch  = 6
+        out_ch = init_ch
+        pad    = int((ksize/2 - 1) if ksize%2 == 0 else (ksize - 1)/2)
+
+        self.att = att
+
+        for _ in range(down_leves):
+            seq += self.conv_block(in_ch, out_ch, ksize, 2, pad)
+            in_ch  = out_ch
+            out_ch = out_ch*2
+
+        for _ in range(deep-down_leves-1):
+            seq += self.conv_block(in_ch, out_ch, ksize, 1, pad)
+            in_ch  = out_ch
+            out_ch = out_ch*2
+
+        seq.append(nn.Conv2d(in_channels = in_ch,
+                             out_channels= 1,
+                             kernel_size = ksize,
+                             stride      = 1,
+                             padding     = pad))
+
+        self.dis_arch = nn.Sequential(*seq)
         
-        self.conv2 = nn.Conv2d(in_channels = 64,
-                               out_channels= 128,
-                               kernel_size = 3,
-                               stride      = 2,
-                               padding     = 1)
-        self.bn_2  = nn.BatchNorm2d(num_features=128)
-        self.relu2 = nn.LeakyReLU(inplace=True)
-        #[56x56] 
 
-        self.conv3 = nn.Conv2d(in_channels = 128,
-                               out_channels= 256,
-                               kernel_size = 3,
-                               stride      = 1,
-                               padding     = 1)
-        self.bn_3  = nn.BatchNorm2d(num_features=256)
-        self.relu3 = nn.LeakyReLU(inplace=True)
-        #[56x56]
+    def conv_block(self, in_ch, out_ch, ksize, stride, pad):
+        subseq = [nn.Conv2d(in_channels  = in_ch,
+                            out_channels = out_ch,
+                            kernel_size  = ksize, 
+                            stride       = stride, 
+                            padding      = pad)]
 
-        self.conv4 = nn.Conv2d(in_channels = 256,
-                               out_channels= 512,
-                               kernel_size = 3,
-                               stride      = 1,
-                               padding     = 1)
-        self.bn_4  = nn.BatchNorm2d(num_features=512)
-        self.relu4 = nn.LeakyReLU(inplace=True)
-        #[56x56]
+        if in_ch != 6:
+            subseq.append(nn.BatchNorm2d(out_ch))
+        subseq.append(nn.LeakyReLU(inplace=True))
 
-        self.conv5 = nn.Conv2d(in_channels = 512,
-                               out_channels= 1,
-                               kernel_size = 3,
-                               stride      = 1,
-                               padding     = 1)
-        #[56x56]
-    
-    def forward(self, input_pair):
-        out = self.conv1(input_pair)
-        out = self.relu1(out)
+        return  subseq
 
-        out = self.conv2(out)
-        out = self.bn_2(out)
-        out = self.relu2(out)
 
-        out = self.conv3(out)
-        out = self.bn_3(out)
-        out = self.relu3(out)
-
-        out = self.conv4(out)
-        out = self.bn_4(out)
-        out = self.relu4(out)
-
-        out = self.conv5(out)
+    def forward(self, input_pair, att_map=None):
+        if self.att:
+            input_pair = torch.mul(input_pair, att_map)
+        out = self.dis_arch(input_pair) #[28x28]
         return out
 
 class GANLoss(nn.Module):
@@ -223,38 +215,62 @@ class GANLoss(nn.Module):
         return out
 
 
-class UNet:
-    def __init__(self, img_ch, init_ch):
+class UNet(nn.Module):
+    """
+        U-Net architecture based on "Learning to See in the Dark" (Chen et al., 2018)
+
+        arXiv: https://arxiv.org/abs/1805.01934
+    """
+
+    def __init__(self, img_ch=3, init_ch=32, levels=5):
         super(UNet, self).__init__()
-        self.init_ch     = init_ch
-        self.conv_block1 = self.conv_block(img_ch, init_ch)
-        self.maxpool1    = nn.MaxPool2d(2,2)
-        self.conv_block2 = self.conv_block(init_ch, init_ch*2)
-        self.maxpool2    = nn.MaxPool2d(2,2)
-        self.conv_block3 = self.conv_block(init_ch*2, init_ch*4)
-        self.maxpool3    = nn.MaxPool2d(2,2)
-        self.conv_block4 = self.conv_block(init_ch*4, init_ch*8)
-        self.maxpool4    = nn.MaxPool2d(2,2)
-        self.conv_block5 = self.conv_block(init_ch*8, init_ch*16)
+        self.init_ch = init_ch
+        self.levels  = levels
 
-        self.deconv4       = nn.ConvTranspose2d(init_ch*16, init_ch*8, 2, stride=2)
-        self.upconv_block4 = self.conv_block(init_ch*16, init_ch*8)
-        self.deconv3       = nn.ConvTranspose2d(init_ch*8, init_ch*4, 2, stride=2)
-        self.upconv_block4 = self.conv_block(init_ch*8, init_ch*4)
-        self.deconv2       = nn.ConvTranspose2d(init_ch*4, init_ch*2, 2, stride=2)
-        self.upconv_block2 = self.conv_block(init_ch*4, init_ch*2)     
-        self.deconv1       = nn.ConvTranspose2d(init_ch*2, init_ch, 2, stride=2)
-        self.upconv_block1 = self.conv_block(init_ch*2, init_ch)      
+        if levels > 0:
+            self.conv_block1 = self.conv_block(img_ch, init_ch)
+        
+        if levels > 1:
+            self.maxpool1    = nn.MaxPool2d(2,2)
+            self.conv_block2 = self.conv_block(init_ch, init_ch*2)
+            
+        if levels > 2:
+            self.maxpool2    = nn.MaxPool2d(2,2)
+            self.conv_block3 = self.conv_block(init_ch*2, init_ch*4)
+            
+        if levels > 3:
+            self.maxpool3    = nn.MaxPool2d(2,2)
+            self.conv_block4 = self.conv_block(init_ch*4, init_ch*8)
+            
+        if levels > 4:
+            self.maxpool4    = nn.MaxPool2d(2,2)
+            self.conv_block5 = self.conv_block(init_ch*8, init_ch*16)
+            self.deconv4       = nn.ConvTranspose2d(init_ch*16, init_ch*8, 2, stride=2)
+            
+        if levels > 3:
+            self.upconv_block4 = self.conv_block(init_ch*16, init_ch*8)
+            self.deconv3       = nn.ConvTranspose2d(init_ch*8, init_ch*4, 2, stride=2)
 
-        self.out_conv      = nn.Conv2d(init_ch, img_ch, 1, padding=1)
+        if levels > 2:    
+            self.upconv_block3 = self.conv_block(init_ch*8, init_ch*4)
+            self.deconv2       = nn.ConvTranspose2d(init_ch*4, init_ch*2, 2, stride=2)
+        
+        if levels > 1:    
+            self.upconv_block2 = self.conv_block(init_ch*4, init_ch*2)              
+            self.deconv1       = nn.ConvTranspose2d(init_ch*2, init_ch, 2, stride=2)
+
+        if levels > 0:
+            self.upconv_block1 = self.conv_block(init_ch*2, init_ch)      
+            self.out_conv      = nn.Conv2d(init_ch, img_ch, 1, padding=0)
+            self.out_act       = nn.Tanh()
 
     def conv_block(self, in_ch, out_ch):
         return  nn.Sequential(
                     nn.Conv2d(in_ch , out_ch, 3, padding=1),
-                    nn.BatchNorm2d(out_ch),
+                    #nn.BatchNorm2d(out_ch),
                     nn.ReLU(inplace=True),
                     nn.Conv2d(out_ch, out_ch, 3, padding=1),
-                    nn.BatchNorm2d(out_ch),
+                    #nn.BatchNorm2d(out_ch),
                     nn.ReLU(inplace=True)
                 )
 
@@ -262,33 +278,58 @@ class UNet:
         self, 
         inputs):
 
-        block1 = self.conv_block1(inputs)
-        pool1  = self.maxpool1(block1)
-        block2 = self.conv_block2(pool1)
-        pool2  = self.maxpool2(block2)
-        block3 = self.conv_block3(pool2)
-        pool3  = self.maxpool3(block3)
-        block4 = self.conv_block1(pool3)
-        pool4  = self.maxpool4(block4)
-        block5 = self.conv_block1(pool4)
+        # ImgSize: [224x224]
+        if self.levels > 0:
+            convBlock1 = self.conv_block1(inputs)
+        # ImgSize: [224x224]
 
-        upblock4 = self.deconv4(block5)
-        concat4  = torch.cat([pool4, upblock4])
-        block4   = self.upconv_block4(concat4)
+        if self.levels > 1:
+            pool1      = self.maxpool1(convBlock1)
+            convBlock2 = self.conv_block2(pool1)
+        # ImgSize: [112x112]
 
-        upblock3 = self.deconv3(block4)
-        concat3  = torch.cat([pool3, upblock3])
-        block3   = self.upconv_block3(concat3)
+        if self.levels > 2:
+            pool2      = self.maxpool2(convBlock2)
+            convBlock3 = self.conv_block3(pool2)
+        # ImgSize: [56x56]
 
-        upblock2 = self.deconv2(block3)
-        concat2  = torch.cat([pool2, upblock2])
-        block2   = self.upconv_block2(concat2)
+        if self.levels > 3:
+            pool3      = self.maxpool3(convBlock3)
+            convBlock4 = self.conv_block4(pool3)
+        # ImgSize: [28x28]
 
-        upblock1 = self.deconv1(block2)
-        concat1  = torch.cat([pool1, upblock1])
-        block1   = self.upconv_block5(concat1)
+        if self.levels > 4:
+            pool4      = self.maxpool4(convBlock4)
+            convBlock5 = self.conv_block5(pool4)
+            # ImgSize: [14x14]
 
-        out  = self.out_conv(block1)
+            upBlock4 = self.deconv4(convBlock5, output_size=convBlock4.size())
+            concat4  = torch.cat([upBlock4, convBlock4],dim=1)
+            # ImgSize: [28x28]
+
+        if self.levels > 3:
+            upconvBlock4 = self.upconv_block4(concat4)
+            upBlock3 = self.deconv3(upconvBlock4, output_size=convBlock3.size())
+            concat3  = torch.cat([upBlock3, convBlock3],dim=1)
+        # ImgSize: [56x56]
+
+        if self.levels > 2:
+            upconvBlock3 = self.upconv_block3(concat3)
+            upBlock2 = self.deconv2(upconvBlock3, output_size=convBlock2.size())
+            concat2  = torch.cat([upBlock2, convBlock2],dim=1)
+        # ImgSize: [112x112]
+
+        if self.levels > 1:
+            upconvBlock2 = self.upconv_block2(concat2)
+            upBlock1 = self.deconv1(upconvBlock2, output_size=convBlock1.size())
+            concat1  = torch.cat([upBlock1, convBlock1],dim=1)
+        # ImgSize: [224x224]
+
+        if self.levels > 0:
+            upconvBlock1 = self.upconv_block1(concat1)
+            out_conv = self.out_conv(upconvBlock1)
+            out      = self.out_act(out_conv)
+        # ImgSize: [224x224]
 
         return out
 

@@ -16,34 +16,62 @@ Use:
 See options/base.py for more details about more information of all the default parameters.
 """
 
-from models.end2end import EDNet
-from models.end2end import cGAN
-
+from models.models import setModel
 from options.base import baseOpt
 
-from tools.pre import read_data, get_array
+from tools.pre import read_data
+from tools.pre import get_array_list
+from tools.pre import get_array_to_net
 from tools.pre import shuffle_data
+from tools.pre import get_filtered_img_objs
 
 import numpy as np
 import time
 import os
+from PIL import Image
 
-def train_op(model, opts):
+def train_op(model, opts, isAdv):
     if not os.path.exists('checkpoints'):
         os.makedirs('checkpoints')
-    # Make a list of pairs of ambient and flash image filenames
-    imgs_list  = read_data(path=opts.dataset_path, mode='train')
-    train_size = len(imgs_list)
 
-    for ep in range(1, opts.epochs+1):
+    # Make a list of pairs of ambient and flash image filenames
+    img_obj_list = read_data(path=opts.dataset_path, mode='train')
+    train_size   = len(img_obj_list)
+    indices      = np.arange(train_size)
+    
+    img_bf_obj_list = None
+    if opts.model == 'DeepFlash':
+        img_bf_obj_list = get_filtered_img_objs(img_obj_list)
+
+    for ep in range(opts.load_epoch+1, opts.load_epoch+opts.epochs+1):
         start = time.time()
         # Get array of the images, make data augmentation and random shuffle
-        ambnt_imgs, flash_imgs = get_array(imgs_list, mode='train', MIN_SIZE=opts.load_size, SIZE=opts.crop_size)
-        ambnt_imgs, flash_imgs = shuffle_data(ambnt_imgs, flash_imgs)
+        data_dict = get_array_list(input_list    = img_obj_list, 
+                                   filtered_list = img_bf_obj_list,
+                                   load_min_size = opts.load_size, 
+                                   out_size      = opts.crop_size)
 
+        ambnt_imgs = np.array(data_dict['ambnt_imgs'])
+        flash_imgs = np.array(data_dict['flash_imgs'])
+
+        
+        np.random.shuffle(indices)
+        
+        ambnt_imgs = ambnt_imgs[indices]
+        flash_imgs = flash_imgs[indices]
+
+        # For the DeepFlash model
+        if opts.model == 'DeepFlash':
+            ambnt_bf_imgs = np.array(data_dict['ambnt_bf_imgs'])
+            flash_bf_imgs = np.array(data_dict['flash_bf_imgs'])
+            ambnt_bf_imgs = ambnt_bf_imgs[indices]
+            flash_bf_imgs = flash_bf_imgs[indices]          
+        
         loss_it  = []
         loss_gen = []
         loss_dis = []
+
+        model.set_requires_grad(model.Gen, requires_grad=True)
 
         for it in range(0, len(ambnt_imgs), opts.batch_size):
             # Batch of images
@@ -52,14 +80,30 @@ def train_op(model, opts):
             
             # Set inputs of the model and run 
             model.set_inputs(flash_batch, ambnt_batch)       
-            model.optimize_parameters()
+            
+            # For the DeepFlash model
+            if opts.model == 'DeepFlash':
+                ambnt_bf_batch = ambnt_bf_imgs[it:it+opts.batch_size]
+                flash_bf_batch = flash_bf_imgs[it:it+opts.batch_size]    
+                model.set_filtered_inputs(flash_bf_batch, ambnt_bf_batch)              
 
-            loss_it.append(model.loss_gen_L1.cpu().detach().numpy())
-            loss_gen.append(model.loss_gen_GAN.cpu().detach().numpy())
-            loss_dis.append(model.loss_Dis.cpu().detach().numpy())
-            print('\riter:{:4d}/{:4d}, loss_batch(L1): {:.4f}, loss_gen: {:.4f}, loss_dis: {:.4f}'.format(int(it+opts.batch_size),train_size,loss_it[-1], loss_gen[-1], loss_dis[-1]), end='')
+            model.optimize_parameters()
+            loss_it.append(model.loss_R.cpu().detach().numpy())
+
+            # Reporting loss value
+            print('\riter:{:4d}/{:4d}, loss_batch(R=L1): {:.4f}'.format(int(it+opts.batch_size),train_size,loss_it[-1]), end='')
+            
+            if isAdv:
+                loss_gen.append(model.loss_Gen.cpu().detach().numpy())
+                loss_dis.append(model.loss_Dis.cpu().detach().numpy()/2)
+                print(', loss_gen: {:.4f}, loss_dis: {:.4f}'.format(loss_gen[-1], loss_dis[-1]), end='')
+           
         end = time.time()
-        print('\repochs: {:4d}, loss_batch(L1):{:.4f}, loss_gen: {:.4f}, loss_dis: {:.4f} in {:3.2f}s'.format(ep, np.mean(loss_it), np.mean(loss_gen), np.mean(loss_dis),(end-start)))
+
+        print('\repochs: {:4d}, loss_batch(R=L1):{:.4f}'.format(ep, np.mean(loss_it)), end='')
+        if isAdv:
+            print(', loss_gen: {:.4f}, loss_dis: {:.4f}'.format(np.mean(loss_gen), np.mean(loss_dis)), end='')
+        print(' in {:3.2f}s'.format(end-start))
 
         # Save model each {opts.save_epoch} epochs
         if ep % opts.save_epoch == 0: 
@@ -71,9 +115,10 @@ if __name__ == '__main__':
     opts  = baseOpt().parse()
     
     # Build model, and run test
-    model = cGAN(opts)
+    model, isAdv = setModel(opts.model, opts)
 
-    # Uncomment for loading a model
-    #model.load_model(opts.load_epoch)
-    
-    train_op(model, opts)
+    # Loading a model
+    if opts.load_epoch > 0:
+        print('Loading model at epoch {:d}'.format(opts.load_epoch))
+        model.load_model(opts.load_epoch)
+    train_op(model, opts, isAdv)

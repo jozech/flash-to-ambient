@@ -340,10 +340,10 @@ class vgg16_decoder(nn.Module):
             self.conv1_2 = nn.Conv2d(128,64,3,1,1)
             self.bn1_2   = nn.BatchNorm2d(64)
             self.relu1_2 = nn.ReLU(inplace=True)
-            self.conv1_1 = nn.Conv2d(64,3,3,1,1)
-
+            
         # [224x224]
         if levels > 0:
+            self.conv1_1 = nn.Conv2d(64,3,3,1,1)
             self.tanh0 = nn.Tanh()
 
     def forward_unpool(
@@ -440,9 +440,8 @@ class vgg16_decoder(nn.Module):
             if use_bn: out = self.bn1_2(out)
             out = self.relu1_2(out)
 
-            out = self.conv1_1(out)
-
         if self.levels > 0:
+            out = self.conv1_1(out)
             out = self.tanh0(out)
         return out
 
@@ -545,9 +544,8 @@ class vgg16_decoder(nn.Module):
             if use_bn:  out = bn1_2(out)
             out = self.relu1_2(out)
 
-            out = self.conv1_1(out)
-
         if self.levels > 0:
+            out = self.conv1_1(out)
             out = self.tanh0(out)
 
         return out

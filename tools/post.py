@@ -2,6 +2,7 @@ import torch
 import numpy as np
 
 from PIL import Image
+
 def PSNR(ifake, iambnt, iflash, it=None, save=True):
     ifake  = ifake.cpu().detach().numpy() 
     iambnt = iambnt.cpu().detach().numpy() 
