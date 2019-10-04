@@ -21,11 +21,11 @@ The architecture has two CNNs, the generator, generates synthetic ambient images
 |![](imgs/flash_it_40.png)|![Synthetic ambient image](imgs/fake_it_40.png)|![Ambient image](imgs/real_it_40.png)|
 |![](imgs/flash_it_113.png)|![Synthetic ambient image](imgs/fake_it_113.png)|![Ambient image](imgs/real_it_113.png)|
 
-Figure 2. Some results of our model based on the pix2pix framework. Flash images (left), images generated through the generator network (middle) and the ground truth, the ambient image(right). These results are obtained after 700 epochs with the default learning rates, 2e-4(generator) and 2e-5(discriminator), and then reducing both learning rates by a factor of 10 to train until 1600 epochs.
+Figure 2. Some results of our model based on the pix2pix framework. Flash images (left), images generated through the generator network (middle) and the ground truth, the ambient image(right). These results are obtained after 600 epochs with the default learning rates, 2e-4(generator) and 2e-5(discriminator).
 
 ## Prerequisites
 
-* Linux 
+* Linux
 * Python 3.6.8
 * PyTorch 1.2.0
 * NVIDIA GPU + CUDA CuDNN
@@ -64,16 +64,16 @@ If you have problems with the script above, you can download it [here](https://d
      ├─ tools/
      └─ options/
 
-* You can generate the results for the test dataset, for 1600 epochs of training.
+* You can generate the results for the test dataset, for 600 epochs of training.
 ```
 python download_model.py
-python test.py --load_epoch=1600
+python test.py --load_epoch=600
 ```
 or
 
 ```
 python3 download_model.py
-python3 test.py --load_epoch=1600
+python3 test.py --load_epoch=600
 ```
 
 * Train our model, with default hyperparameters.

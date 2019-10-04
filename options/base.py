@@ -17,7 +17,8 @@ class baseOpt:
 		parser.add_argument('--lr2', type=float, default=2e-5, help='number of epochs')
 		parser.add_argument('--beta1', type=float, default=0.5, help='number of epochs')
 		parser.add_argument('--lambda_GAN', type=float, default=1.0, help='number of epochs')
-		parser.add_argument('--save_epoch', type=int, default=100, help='number of epochs for saving the model')
+		parser.add_argument('--vgg_freezed', type=bool, default=True, help='make or not backpropagation on the the vgg encoder')
+		parser.add_argument('--save_epoch', type=int, default=0.01, help='number of epochs for saving the model')
 		parser.add_argument('--load_epoch', type=int, default=0,help='load at epoch #')
 		parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
 		

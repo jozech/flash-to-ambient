@@ -71,7 +71,9 @@ def train_op(model, opts, isAdv):
         loss_gen = []
         loss_dis = []
 
-        model.set_requires_grad(model.Gen, requires_grad=True)
+        if not opts.vgg_freezed:
+            print('Unfreezing vgg_encoder...')
+            model.set_requires_grad(model.Gen, requires_grad=True)
 
         for it in range(0, len(ambnt_imgs), opts.batch_size):
             # Batch of images

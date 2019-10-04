@@ -4,7 +4,7 @@ import zipfile
 
 from sys import stdout
 
-ID = '15-oPZAxzATu6l3s2bDr79OQe6qWwTpEC'
+ID = '1g1SMPSCbfy0KisVJqpBOyQSrDK9kfIRP'
 DEST = 'model-1600.zip'
 
 def confirm_token(resp):
