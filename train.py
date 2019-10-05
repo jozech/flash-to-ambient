@@ -93,7 +93,7 @@ def train_op(model, opts, isAdv):
             loss_it.append(model.loss_R.cpu().detach().numpy())
 
             # Reporting loss value
-            print('\riter:{:4d}/{:4d}, loss_batch(R=L1): {:.4f}'.format(int(it+opts.batch_size),train_size,loss_it[-1]), end='')
+            print('\riter:{:4d}/{:4d}, loss_batch(R): {:.4f}'.format(int(it+opts.batch_size),train_size,loss_it[-1]), end='')
             
             if isAdv:
                 loss_gen.append(model.loss_Gen.cpu().detach().numpy())
@@ -102,7 +102,7 @@ def train_op(model, opts, isAdv):
            
         end = time.time()
 
-        print('\repochs: {:4d}, loss_batch(R=L1):{:.4f}'.format(ep, np.mean(loss_it)), end='')
+        print('\repochs: {:4d}, loss_batch(R):{:.4f}'.format(ep, np.mean(loss_it)), end='')
         if isAdv:
             print(', loss_gen: {:.4f}, loss_dis: {:.4f}'.format(np.mean(loss_gen), np.mean(loss_dis)), end='')
         print(' in {:3.2f}s'.format(end-start))

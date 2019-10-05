@@ -11,7 +11,7 @@ from .nets import GANLoss
 from .nets import UNet
 
 class VGG_ED:
-	def __init__(self, opts, isTrain=True):
+	def __init__(self, opts, isTrain=True, loss_type='Cauchy'):
 		self.opts    = opts
 		self.isTrain =  isTrain
 		self.device = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
@@ -21,12 +21,19 @@ class VGG_ED:
 			self.Gen = vgg16_generator_deconv(levels=5).cuda()
 			self.Gen.set_vgg_as_encoder()	
 			
-			self.criteionL1    = torch.nn.L1Loss()
+			if loss_type == 'Cauchy': self.criteion = self.CauchyLoss
+			elif loss_type == 'L1'  : self.criteion = torch.nn.L1Loss()
+
 			self.optimizer_gen = torch.optim.Adam(self.Gen.parameters(), lr=opts.lr1, betas=(opts.beta1, 0.999))
 		else:
 			print('Testing mode![on {}]\n'.format(self.device))
 			self.Gen    = vgg16_generator_deconv(levels=5).cuda()
 			self.Gen.set_vgg_as_encoder()
+
+	def CauchyLoss(self, inputs, targets, C=0.1):
+		diff_err = inputs-targets
+		loss_raw = C * torch.log(torch.mul(diff_err, diff_err)/(C*C)+1)
+		return loss_raw.mean()
 
 	def set_inputs(self, inputs, targets):
 		self.real_X = torch.cuda.FloatTensor(inputs)
@@ -36,9 +43,8 @@ class VGG_ED:
 		self.Z, self.fake_Y = self.Gen(self.real_X)
 		
 	def backward_gen(self):
-		self.loss_gen_L1 = self.criteionL1(self.fake_Y, self.real_Y)
-		self.loss_gen    = self.loss_gen_L1 * self.opts.lambda_L1 
-		self.loss_gen.backward()
+		self.loss_R = self.criteion(self.fake_Y, self.real_Y)
+		self.loss_R.backward()
 
 	def optimize_parameters(self):
 		self.optimizer_gen.zero_grad()
@@ -83,6 +89,11 @@ class advModel:
 			print('Testing mode![on {}]\n'.format(self.device))
 			self.Gen    = vgg16_generator_deconv(levels=5).cuda()
 			self.Gen.set_vgg_as_encoder()
+
+	def CauchyLoss(self, inputs, targets, C=0.1):
+		diff_err = inputs-targets
+		loss_raw = C * torch.log(torch.mul(diff_err, diff_err)/(C*C)+1)
+		return loss_raw.mean(0)
 
 	def set_inputs(self, inputs, targets):
 		self.real_X = torch.cuda.FloatTensor(inputs)
@@ -367,7 +378,6 @@ class UNet512:
 		state_dict = torch.load(load_path, map_location=str(self.device))
 
 		self.Gen.load_state_dict(state_dict)
-
 
 def setModel(name, opts):
 	if name == 'advModel':
