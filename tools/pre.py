@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import torch
 import glob
 import numpy as np
 import sys

@@ -1,4 +1,8 @@
 import torch
+
+if torch.cuda.is_available():
+	torch.cuda.manual_seed_all(20)
+
 import os
 import numpy as np
 
@@ -30,7 +34,7 @@ class VGG_ED:
 			self.Gen    = vgg16_generator_deconv(levels=5).cuda()
 			self.Gen.set_vgg_as_encoder()
 
-	def CauchyLoss(self, inputs, targets, C=0.1):
+	def CauchyLoss(self, inputs, targets, C=0.1): # C=0.1 -> 0.1*255/2=12.75[0-255]
 		diff_err = inputs-targets
 		loss_raw = C * torch.log(torch.mul(diff_err, diff_err)/(C*C)+1)
 		return loss_raw.mean()
@@ -68,7 +72,7 @@ class VGG_ED:
 		self.Gen.load_state_dict(state_dict)
 
 class advModel:
-	def __init__(self, opts, isTrain=True, att_map=False):
+	def __init__(self, opts, isTrain=True, att_map=False, loss_type='Cauchy'):
 		self.opts    = opts
 		self.isTrain = isTrain
 		self.device  = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
@@ -175,7 +179,7 @@ class advModel:
 		self.Gen.load_state_dict(state_dict)
 
 class advModelMOD:
-	def __init__(self, opts, isTrain=True):
+	def __init__(self, opts, isTrain=True, loss_type='Cauchy'):
 		self.opts    = opts
 		self.isTrain =  isTrain
 		self.device = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 

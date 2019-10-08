@@ -79,7 +79,7 @@ class vgg16_generator_deconv(nn.Module):
 
         layers  = self.enc5.forward_multiple(input_imgs)
         gray_img= input_imgs.mean(dim=1, keepdim=True)
-        out_img = self.dec5.forward_deconv(layers,gray_img=gray_img)
+        out_img = self.dec5.forward_deconv(layers, att_map=gray_img)
             
         return layers['z'], out_img
 
@@ -156,11 +156,13 @@ class discriminator(nn.Module):
 
         self.att = att
 
+        # input: [224x224], output: [28x28] (default)
         for _ in range(down_leves):
             seq += self.conv_block(in_ch, out_ch, ksize, 2, pad)
             in_ch  = out_ch
             out_ch = out_ch*2
-
+        
+        # convs with stride 1: deep-down_leves-1=5-3-1=1
         for _ in range(deep-down_leves-1):
             seq += self.conv_block(in_ch, out_ch, ksize, 1, pad)
             in_ch  = out_ch
