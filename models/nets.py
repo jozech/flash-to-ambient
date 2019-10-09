@@ -77,9 +77,9 @@ class vgg16_generator_deconv(nn.Module):
 
     def forward(self, input_imgs):  
 
-        layers  = self.enc5.forward_multiple(input_imgs)
-        gray_img= input_imgs.mean(dim=1, keepdim=True)
-        out_img = self.dec5.forward_deconv(layers, att_map=gray_img)
+        layers  = self.enc5.concat_forward(input_imgs)
+        att_map = input_imgs.mean(dim=1, keepdim=True)
+        out_img = self.dec5.concat_forward(layers, att_map = att_map)
             
         return layers['z'], out_img
 

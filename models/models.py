@@ -15,18 +15,19 @@ from .nets import GANLoss
 from .nets import UNet
 
 class VGG_ED:
-	def __init__(self, opts, isTrain=True, loss_type='Cauchy'):
+	def __init__(self, opts, isTrain=True):
 		self.opts    = opts
 		self.isTrain =  isTrain
 		self.device = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
 
 		if isTrain:
-			print('Training mode![on {}]\n'.format(self.device))
+			print('Training mode [{}]'.format(self.device))
 			self.Gen = vgg16_generator_deconv(levels=5).cuda()
 			self.Gen.set_vgg_as_encoder()	
 			
-			if loss_type == 'Cauchy': self.criteion = self.CauchyLoss
-			elif loss_type == 'L1'  : self.criteion = torch.nn.L1Loss()
+			if   opts.R_loss == 'Cauchy': self.criteion = self.CauchyLoss
+			elif opts.R_loss == 'L1'    : self.criteion = torch.nn.L1Loss()
+			print('Training with {} loss\n'.format(opts.R_loss))
 
 			self.optimizer_gen = torch.optim.Adam(self.Gen.parameters(), lr=opts.lr1, betas=(opts.beta1, 0.999))
 		else:
