@@ -1,18 +1,3 @@
-"""
-This script works for a encoder-decoder network(EDNet) and for a Conditional Adversarial Network(cGAN). It 
-first load the dataset(pairs of filenames):
-
-    img_list = [[object1_ambient.png, object1_flash.png], ...]
-
-Use:
-
-    python test.py --load_epoch=1000
-    python test.py --load_epoch=2000
-    python test.py --load_epoch=100
-
-See options/base.py for more details about more information of all the default parameters.
-"""
-
 import os
 import glob
 import numpy as np

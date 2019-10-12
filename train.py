@@ -1,8 +1,6 @@
 """
 This script works for a encoder-decoder network(EDNet) and a Conditional Adversarial Network(cGAN). It 
-first load the dataset(pairs of filenames):
-
-    img_list = [[object1_ambient.png, object1_flash.png], ...]
+first load the dataset(pairs of filenames).
 
 Next, we read all the images, perform data augmentation and suffle the list of images on each epoch. Finally,
 we run the model on each batch of images.
