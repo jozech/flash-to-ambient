@@ -128,6 +128,38 @@ def get_array_list(
 
     return data_dict
 
+def get_array_list_on_test(
+    input_list    = None,
+    filtered_list = None,
+    load_min_size = None,
+    out_size      = None):
+
+    ambnt_list = []
+    flash_list = []
+    
+    ambnt_bf_list = []
+    flash_bf_list = []
+
+    for iobj, img_f in enumerate(input_list):
+        if filtered_list:
+            img_f_bf     = filtered_list[iobj]
+            img_f_bf_out = get_array_to_net(img_f_bf)
+
+            flash_bf_list.append(img_f_bf_out)
+            img_f_bf.close()
+
+        img_f_out = get_array_to_net(img_f)
+        flash_list.append(img_f_out)
+
+        img_f.close()
+
+    data_dict = {
+            'flash_imgs'    : flash_list,
+            'flash_bf_imgs' : flash_bf_list
+    }
+
+    return data_dict
+
 def get_array_to_net(im):
     img_arr = np.asarray(im, dtype=np.float32)/255.0
     img_arr = img_arr * 2.0 - 1.0
@@ -135,13 +167,9 @@ def get_array_to_net(im):
 
     return img_arr
 
-def read_data(path, mode):
-    if mode == 'train':
-        data_list, _ = dataset_list(path)
-    elif mode == 'test':
-        _, data_list = dataset_list(path)
-    else:
-        print("get_data() got an invalid argument for 'mode'('train' or 'test')...")
+
+def read_train_data(path):
+    data_list, _ = dataset_list(path)
 
     im_list = []
     n_pairs    = 0
@@ -158,9 +186,33 @@ def read_data(path, mode):
         n_pairs+=1
         print("\rreading data\t: [{:3}/{:3}] {:3.1f}%".format(n_pairs, list_size, 100.0*(n_pairs/list_size)), end='')
     print("\rreading data\t: [{:3}/{:3}] {:3.1f}%".format(n_pairs, list_size, 100.0*(n_pairs/list_size)))
-    print("{:s} size\t: {:d} pairs of images".format(mode, len(im_list)), end='\n\n')
+    print("train size\t: {:d} pairs of images".format(len(im_list)), end='\n\n')
 
     return im_list
+
+def read_test_data(path):
+    _, data_list = dataset_list(path)
+
+    im_list   = []
+    file_list = []
+    list_size = len(data_list)
+    
+    for n_imgs, (a, f) in enumerate(data_list):
+        img_f_tmp = Image.open(f)
+        #img_a_tmp, img_f_tmp = read_pair(a,f)
+        #img_a = img_a_tmp.copy()
+        img_f = img_f_tmp.copy()
+        im_list.append(img_f)
+        file_list.append(f)
+        #im_list.append([img_a, img_f])
+        #img_a_tmp.close()
+        #img_f_tmp.close()
+        #n_pairs+=1
+        print("\rreading data\t: [{:3}/{:3}] {:3.1f}%".format((n_imgs+1), list_size, 100.0*((n_imgs+1)/list_size)), end='')
+    print("\rreading data\t: [{:3}/{:3}] {:3.1f}%".format((n_imgs+1), list_size, 100.0*((n_imgs+1)/list_size)))
+    print("test size\t: {:d} pairs of images".format(len(im_list)), end='\n\n')
+
+    return file_list, im_list
 
 def shuffle_data(imgs_sets):
     rng_state = np.random.get_state()

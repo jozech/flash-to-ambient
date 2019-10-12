@@ -19,7 +19,7 @@ See options/base.py for more details about more information of all the default p
 from models.models import setModel
 from options.base import baseOpt
 
-from tools.pre import read_data
+from tools.pre import read_train_data
 from tools.pre import get_array_list
 from tools.pre import get_array_to_net
 from tools.pre import shuffle_data
@@ -35,7 +35,7 @@ def train_op(model, opts, isAdv):
         os.makedirs('checkpoints')
 
     # Make a list of pairs of ambient and flash image filenames
-    img_obj_list = read_data(path=opts.dataset_path, mode='train')
+    img_obj_list = read_train_data(path=opts.dataset_path)
     train_size   = len(img_obj_list)
     indices      = np.arange(train_size)
     
@@ -43,7 +43,7 @@ def train_op(model, opts, isAdv):
     if opts.model == 'DeepFlash':
         img_bf_obj_list = get_filtered_img_objs(img_obj_list)
 
-    if opts.vgg_freezed == False:
+    if opts.vgg_freezed == False and opts.model != 'UNet':
         print('Unfreezing vgg_encoder...\n')
         model.set_requires_grad(model.Gen, requires_grad=True)
 
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     opts  = baseOpt().parse()
     
     # Build model, and run test
-    model, isAdv = setModel(opts.model, opts)
+    model, isAdv = setModel(opts)
 
     # Loading a model
     if opts.load_epoch > 0:

@@ -372,7 +372,7 @@ class DeepFlash:
 			if net is not None:
 				for param in net.parameters():
 					param.requires_grad = requires_grad
-					
+						
 	def save_model(self, ep):
 		file_model = 'model-{}.pth'.format(str(ep))
 		save_path = os.path.join(self.opts.checkpoints_dir, file_model)
@@ -405,7 +405,8 @@ class UNet512:
 
 	def set_inputs(self, inputs, targets):
 		self.real_X = torch.cuda.FloatTensor(inputs)
-		self.real_Y = torch.cuda.FloatTensor(targets)
+		if targets: 
+			self.real_Y = torch.cuda.FloatTensor(targets)
 
 	def forward(self):
 		self.fake_Y = self.Gen(self.real_X)
@@ -436,20 +437,20 @@ class UNet512:
 
 		self.Gen.load_state_dict(state_dict)
 
-def setModel(name, opts, isTrain=True):
-	if name == 'advModel':
+def setModel(opts, isTrain=True):
+	if opts.model == 'advModel':
 		return advModel(opts, isTrain), True
 
-	elif name == 'advModelMOD':
+	elif opts.model == 'advModelMOD':
 		return advModelMOD(opts, isTrain), True
 	
-	elif name == 'UNet512':
+	elif opts.model == 'UNet512':
 		return UNet512(opts, isTrain), False
 
-	elif name == 'VGG_ED':
+	elif opts.model == 'VGG_ED':
 		return VGG_ED(opts, isTrain), False
 
-	elif name == 'DeepFlash':
+	elif opts.model == 'DeepFlash':
 		return DeepFlash(opts, isTrain), False
 	
 	else:
