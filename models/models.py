@@ -18,21 +18,33 @@ class VGG_ED:
 	def __init__(self, opts, isTrain=True):
 		self.opts    = opts
 		self.isTrain =  isTrain
-		self.device = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
+		self.device  = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
 
 		if isTrain:
 			print('Training mode [{}]'.format(self.device))
-			self.Gen = vgg16_generator_deconv(levels=5).cuda()
+			if opts.upsample == 'deconv':
+				self.Gen = vgg16_generator_deconv(levels=5, opts=opts).cuda()
+			elif opts.upsample == 'unpool':
+				self.Gen = vgg16_generator_unpool(levels=5, opts=opts).cuda()
+
 			self.Gen.set_vgg_as_encoder()	
 			
 			if   opts.R_loss == 'Cauchy': self.criteion = self.CauchyLoss
 			elif opts.R_loss == 'L1'    : self.criteion = torch.nn.L1Loss()
-			print('Training with {} loss\n'.format(opts.R_loss))
 
+			print('Training with:\n')
+			print('\tmodel      \t{}'.format(opts.model))
+			print('\tloss 		\t{}'.format(opts.R_loss))
+			print('\tupsample	\t{}'.format(opts.upsample))
+			print('\tAttention	\t{}'.format(opts.attention))
+			print('\tvgg_freezed\t{}\n'.format(opts.vgg_freezed))
 			self.optimizer_gen = torch.optim.Adam(self.Gen.parameters(), lr=opts.lr1, betas=(opts.beta1, 0.999))
 		else:
 			print('Testing mode![on {}]\n'.format(self.device))
-			self.Gen    = vgg16_generator_deconv(levels=5).cuda()
+			if opts.upsample == 'deconv':
+				self.Gen = vgg16_generator_deconv(levels=5, opts=opts).cuda()
+			elif opts.upsample == 'unpool':
+				self.Gen = vgg16_generator_unpool(levels=5, opts=opts).cuda()
 			self.Gen.set_vgg_as_encoder()
 
 	def CauchyLoss(self, inputs, targets, C=0.1): # C=0.1 -> 0.1*255/2=12.75[0-255]
@@ -56,6 +68,19 @@ class VGG_ED:
 		self.forward()
 		self.backward_gen()
 		self.optimizer_gen.step()
+
+	def set_requires_grad(self, nets, requires_grad=False):
+		"""Set requies_grad=Fasle for all the networks to avoid unnecessary computations
+		Parameters:
+            nets (network list)   -- a list of networks
+            requires_grad (bool)  -- whether the networks require gradients or not
+		"""
+		if not isinstance(nets, list):
+			nets = [nets]
+		for net in nets:
+			if net is not None:
+				for param in net.parameters():
+					param.requires_grad = requires_grad
 
 	def save_model(self, ep):
 		file_model = 'model-{}.pth'.format(str(ep))
@@ -285,19 +310,34 @@ class DeepFlash:
 		self.isTrain =  isTrain
 		self.device  = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
 
+
 		if isTrain:
-			print('Training mode![on {}]\n'.format(self.device))
-			self.Gen = vgg16_generator_deconv(levels=5).cuda()
+			print('Training mode [{}]'.format(self.device))
+			if opts.upsample == 'deconv':
+				self.Gen = vgg16_generator_deconv(levels=5, opts=opts).cuda()
+			elif opts.upsample == 'unpool':
+				self.Gen = vgg16_generator_unpool(levels=5, opts=opts).cuda()
+			
 			self.Gen.set_vgg_as_encoder()	
 			
-			self.criteionL1    = torch.nn.L1Loss()
+			if   opts.R_loss == 'Cauchy': self.criteion = self.CauchyLoss
+			elif opts.R_loss == 'L1'    : self.criteion = torch.nn.L1Loss()
+			print('Training with:\n')
+			print('\tmodel      \t{}'.format(opts.model))
+			print('\tloss 	  \t{}'.format(opts.R_loss))
+			print('\tupsample \t{}'.format(opts.upsample))
+			print('\tAttention\t{}'.format(opts.attention))
+			print('\tvgg_freezed\t{}\n'.format(opts.vgg_freezed))
 			self.optimizer_gen = torch.optim.Adam(self.Gen.parameters(), lr=opts.lr1, betas=(opts.beta1, 0.999))
 		else:
-			print('Testing mode![on {}]\n'.format(self.device))
-			self.Gen    = vgg16_generator_deconv(levels=5).cuda()
+			print('Testing mode![{}]\n'.format(self.device))
+			if opts.upsample == 'deconv':
+				self.Gen = vgg16_generator_deconv(levels=5, opts=opts).cuda()
+			elif opts.upsample == 'unpool':
+				self.Gen = vgg16_generator_unpool(levels=5, opts=opts).cuda()
 			self.Gen.set_vgg_as_encoder()
 
-	def set_inputs(self, data_dict, inputs, targets):
+	def set_inputs(self, inputs, targets):
 		self.real_X = torch.cuda.FloatTensor(inputs)
 		self.real_Y = torch.cuda.FloatTensor(targets)
 
@@ -311,9 +351,8 @@ class DeepFlash:
 		self.fake_Y = torch.clamp(self.real_X - self.fake_Y_bf*2.0, -1.0, 1.0)
 
 	def backward_gen(self):		
-		self.loss_gen_L1 = self.criteionL1(self.fake_Y_bf, self.diff_bf)
-		self.loss_gen    = self.loss_gen_L1 * self.opts.lambda_L1 
-		self.loss_gen.backward()
+		self.loss_R = self.criteion(self.fake_Y_bf, self.diff_bf)
+		self.loss_R.backward()
 
 	def optimize_parameters(self):
 		self.optimizer_gen.zero_grad()
@@ -321,6 +360,19 @@ class DeepFlash:
 		self.backward_gen()
 		self.optimizer_gen.step()
 
+	def set_requires_grad(self, nets, requires_grad=False):
+		"""Set requies_grad=Fasle for all the networks to avoid unnecessary computations
+		Parameters:
+            nets (network list)   -- a list of networks
+            requires_grad (bool)  -- whether the networks require gradients or not
+		"""
+		if not isinstance(nets, list):
+			nets = [nets]
+		for net in nets:
+			if net is not None:
+				for param in net.parameters():
+					param.requires_grad = requires_grad
+					
 	def save_model(self, ep):
 		file_model = 'model-{}.pth'.format(str(ep))
 		save_path = os.path.join(self.opts.checkpoints_dir, file_model)
@@ -384,21 +436,21 @@ class UNet512:
 
 		self.Gen.load_state_dict(state_dict)
 
-def setModel(name, opts):
+def setModel(name, opts, isTrain=True):
 	if name == 'advModel':
-		return advModel(opts), True
+		return advModel(opts, isTrain), True
 
 	elif name == 'advModelMOD':
-		return advModelMOD(opts), True
+		return advModelMOD(opts, isTrain), True
 	
 	elif name == 'UNet512':
-		return UNet512(opts), False
+		return UNet512(opts, isTrain), False
 
 	elif name == 'VGG_ED':
-		return VGG_ED(opts), False
+		return VGG_ED(opts, isTrain), False
 
 	elif name == 'DeepFlash':
-		return DeepFlash(opts), False
+		return DeepFlash(opts, isTrain), False
 	
 	else:
 		print('Non available model...')

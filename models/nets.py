@@ -4,19 +4,21 @@ import torch.nn as nn
 from .vgg import vgg16_encoder, vgg16_decoder
 
 class vgg16_generator_unpool(nn.Module):
-    def __init__(self, prob):
+    def __init__(self, levels, opts):
         super(vgg16_generator_unpool, self).__init__()
+        assert (levels > 0)
 
-        self.levels = 5
-        self.enc5   = vgg16_encoder(5)
-        self.dec5   = vgg16_decoder(5, prob)
+        self.enc5   = vgg16_encoder(levels=levels)
+        self.dec5   = vgg16_decoder(levels=levels, mode=opts.upsample)
+        self.levels = levels
 
     def forward(self, input_imgs):  
         
-        layers = self.enc5(input_imgs)
-        out    = self.dec5(layers)
+        layers  = self.enc5.unpool_forward(input_imgs)
+        att_map = input_imgs.mean(dim=1, keepdim=True)
+        out_img = self.dec5.unpool_forward(layers, att_map = att_map)
             
-        return layers['z'], out
+        return layers['z'], out_img
 
     def set_vgg_as_encoder(self):
         from torchvision import models
@@ -67,19 +69,19 @@ class vgg16_generator_unpool(nn.Module):
                 self.enc5.conv5_3.bias.copy_(features_list[28].bias)
 
 class vgg16_generator_deconv(nn.Module):
-    def __init__(self, levels):
+    def __init__(self, levels, opts):
         super(vgg16_generator_deconv, self).__init__()
         assert (levels > 0)
 
         self.enc5   = vgg16_encoder(levels=levels)
-        self.dec5   = vgg16_decoder(levels=levels)
+        self.dec5   = vgg16_decoder(levels=levels, mode=opts.upsample)
         self.levels = levels
 
     def forward(self, input_imgs):  
 
-        layers  = self.enc5.concat_forward(input_imgs)
+        layers  = self.enc5.deconv_forward(input_imgs)
         att_map = input_imgs.mean(dim=1, keepdim=True)
-        out_img = self.dec5.concat_forward(layers, att_map = att_map)
+        out_img = self.dec5.deconv_forward(layers, att_map = att_map)
             
         return layers['z'], out_img
 

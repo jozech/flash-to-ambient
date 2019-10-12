@@ -43,6 +43,10 @@ def train_op(model, opts, isAdv):
     if opts.model == 'DeepFlash':
         img_bf_obj_list = get_filtered_img_objs(img_obj_list)
 
+    if opts.vgg_freezed == False:
+        print('Unfreezing vgg_encoder...\n')
+        model.set_requires_grad(model.Gen, requires_grad=True)
+
     for ep in range(opts.load_epoch+1, opts.load_epoch+opts.epochs+1):
         start = time.time()
         # Get array of the images, make data augmentation and random shuffle
@@ -70,10 +74,6 @@ def train_op(model, opts, isAdv):
         loss_it  = []
         loss_gen = []
         loss_dis = []
-
-        if not opts.vgg_freezed:
-            print('Unfreezing vgg_encoder...')
-            model.set_requires_grad(model.Gen, requires_grad=True)
 
         for it in range(0, len(ambnt_imgs), opts.batch_size):
             # Batch of images

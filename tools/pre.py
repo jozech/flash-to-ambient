@@ -226,6 +226,7 @@ def get_filtered_img_objs(im_list):
         img_objs.append([img_a_bf, img_f_bf])
 
         print("\rfiltering {:3d}/{:3d} ...".format(iobj+1, len(im_list)), end='')
+    print()
     return img_objs
 
 

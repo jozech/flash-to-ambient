@@ -165,7 +165,7 @@ class vgg16_encoder(nn.Module):
 
         return layers
 
-    def concat_forward(
+    def deconv_forward(
         self,
         input):
 
@@ -240,6 +240,7 @@ class vgg16_decoder(nn.Module):
     def __init__(
         self, 
         levels,
+        mode,
         use_dropout = False,
         use_bn      = False,
         use_attn    = False,
@@ -249,6 +250,7 @@ class vgg16_decoder(nn.Module):
         self.levels = levels
 
         # [14x14]
+        ch_ini = 512
         if levels > 4:
             
             self.unpool4 = nn.MaxUnpool2d(kernel_size=2, stride=2)
@@ -257,67 +259,100 @@ class vgg16_decoder(nn.Module):
             #
             # output_padding = 0
             # dilation       = 0
-            self.unconv4 = nn.ConvTranspose2d(in_channels  = 512, 
-                                              out_channels = 512, 
+            ch_cat = ch_ini*2 # 1024
+            hid_ch = ch_ini   # 512
+            out_ch = ch_ini  
+
+            if mode == 'unpool': out_ch = int(ch_ini/2) # 256
+
+            self.unconv4 = nn.ConvTranspose2d(in_channels  = ch_ini, 
+                                              out_channels = hid_ch, 
                                               kernel_size  = 3, 
                                               stride       = 2, 
                                               padding      = 1)
 
-            self.conv_block4 = self.convBlock(False, prob, use_attn, use_bn, 3, 1024, 512)
+            self.conv_block4 = self.convBlock(False, prob, use_attn, use_bn, 3, ch_cat, hid_ch, out_ch)
 
+        ch_ini = int(ch_ini/2) # 256
         # [28x28]
         if levels > 3:
-            self.unpool3 = nn.MaxUnpool2d(kernel_size=2, stride=2)
-            self.unconv3 = nn.ConvTranspose2d(in_channels  = 512, 
-                                              out_channels = 256, 
-                                              kernel_size  = 3, 
-                                              stride       = 2, 
-                                              padding      = 1)
+            ch_cat = ch_ini*2  # 512
+            hid_ch = ch_ini    # 256
+            out_ch = ch_ini    
 
-            self.conv_block3 = self.convBlock(False, prob, use_attn, use_bn, 2, 512, 256)
+            if mode == 'unpool': out_ch = int(ch_ini/2) # 128
 
+            self.unpool3  = nn.MaxUnpool2d(kernel_size=2, stride=2)
+            self.unconv3  = nn.ConvTranspose2d(in_channels  = hid_ch*2, 
+                                               out_channels = hid_ch, 
+                                               kernel_size  = 3, 
+                                               stride       = 2, 
+                                               padding      = 1)
+
+            self.conv_block3 = self.convBlock(False, prob, use_attn, use_bn, 2, ch_cat, hid_ch, out_ch)
+
+        ch_ini = int(ch_ini/2) # 256
         # [56x56]
         if levels > 2:
-            self.unpool2 = nn.MaxUnpool2d(kernel_size=2, stride=2)
-            self.unconv2 = nn.ConvTranspose2d(in_channels  = 256, 
-                                              out_channels = 128, 
-                                              kernel_size  = 3, 
-                                              stride       = 2, 
-                                              padding      = 1)
+            ch_cat = ch_ini*2 # 256
+            hid_ch = ch_ini   # 128
+            out_ch = ch_ini
 
-            self.conv_block2 = self.convBlock(False, prob, use_attn, use_bn, 2, 256, 128)
+            if mode == 'unpool': out_ch = int(ch_ini/2) # 64
 
+            self.unpool2  = nn.MaxUnpool2d(kernel_size=2, stride=2)
+            self.convred2 = nn.Conv2d(256,128,3,1,1)
+            self.unconv2  = nn.ConvTranspose2d(in_channels  = hid_ch*2, 
+                                               out_channels = hid_ch, 
+                                               kernel_size  = 3, 
+                                               stride       = 2, 
+                                               padding      = 1)
+
+            self.conv_block2 = self.convBlock(False, prob, use_attn, use_bn, 2, ch_cat, hid_ch, out_ch)
+
+        ch_ini = int(ch_ini/2) # 64
         # [112x112]
         if levels > 1:
-            self.unpool1 = nn.MaxUnpool2d(kernel_size=2, stride=2)
-            self.unconv1 = nn.ConvTranspose2d(in_channels  = 128, 
-                                              out_channels = 64, 
-                                              kernel_size  = 3, 
-                                              stride       = 2, 
-                                              padding      = 1)
+            ch_cat = ch_ini*2 # 128
+            hid_ch = ch_ini   # 64
+            out_ch = ch_ini
 
-            self.conv_block1 = self.convBlock(False, prob, use_attn, use_bn, 2, 128, 64)       
+            self.unpool1  = nn.MaxUnpool2d(kernel_size=2, stride=2)
+            self.convred1 = nn.Conv2d(128,64,3,1,1)
+            self.unconv1  = nn.ConvTranspose2d(in_channels  = hid_ch*2, 
+                                               out_channels = hid_ch, 
+                                               kernel_size  = 3, 
+                                               stride       = 2, 
+                                               padding      = 1)
+
+            self.conv_block1 = self.convBlock(False, prob, use_attn, use_bn, 2, ch_cat, hid_ch, out_ch)       
             
         # [224x224]
         if levels > 0:
-            self.convToCh = nn.Conv2d(64,3,3,1,1)
+            self.convToCh = nn.Conv2d(ch_ini,3,3,1,1)
             self.tanh0    = nn.Tanh()
 
-    def convBlock(self, use_drop, drop_prop, use_attn, use_bn, block_size, in_channels, out_channels):
+
+    def convBlock(self, use_drop, drop_prop, use_attn, use_bn, block_size, in_ch, hid_ch, out_ch):
+        hid_ch_2nd = hid_ch
+
         seq = []       
-        seq.append(nn.Conv2d(in_channels,out_channels,3,1,1))
-        if use_bn  : seq.append(nn.BatchNorm2d(out_channels))
+        seq.append(nn.Conv2d(in_ch,hid_ch,3,1,1))
+        if use_bn  : seq.append(nn.BatchNorm2d(hid_ch))
         if use_drop: seq.append(nn.Dropout(p=drop_prop, inplace=False))
         seq.append(nn.ReLU(inplace=True))
         
-        seq.append(nn.Conv2d(out_channels,out_channels,3,1,1))
-        if use_bn  : seq.append(nn.BatchNorm2d(out_channels))
+        if block_size == 2:
+            hid_ch_2nd = out_ch
+
+        seq.append(nn.Conv2d(hid_ch,hid_ch_2nd,3,1,1))
+        if use_bn  : seq.append(nn.BatchNorm2d(intch2nd))
         if use_drop: seq.append(nn.Dropout(p=drop_prop, inplace=False))
         seq.append(nn.ReLU(inplace=True))
         
         if block_size > 2:
-            seq.append(nn.Conv2d(out_channels,out_channels,3,1,1))
-            if use_bn  : seq.append(nn.BatchNorm2d(out_channels))
+            seq.append(nn.Conv2d(hid_ch_2nd,out_ch,3,1,1))
+            if use_bn  : seq.append(nn.BatchNorm2d(out_ch))
             if use_drop: seq.append(nn.Dropout(p=drop_prop, inplace=False))
             seq.append(nn.ReLU(inplace=True))   
 
@@ -326,8 +361,10 @@ class vgg16_decoder(nn.Module):
     def unpool_forward(
         self, 
         layers,
-        use_dropout = False,
-        use_bn      = False):
+        att_map       = None,
+        use_dropout   = False,
+        use_attention = False,
+        use_bn        = False):
 
         out = layers['z']
         
@@ -341,6 +378,7 @@ class vgg16_decoder(nn.Module):
         if self.levels > 3:
             enc_out3   = layers['out3']
             pool3_idx  = layers['pool3_idx']
+
             out_unpool = self.unpool3(out, pool3_idx, output_size=enc_out3.size())
             out_concat = torch.cat((out_unpool,enc_out3), dim=1)
             out        = self.conv_block3(out_concat)
@@ -348,6 +386,7 @@ class vgg16_decoder(nn.Module):
         if self.levels > 2:
             enc_out2   = layers['out2']
             pool2_idx  = layers['pool2_idx']
+
             out_unpool = self.unpool2(out, pool2_idx, output_size=enc_out2.size())
             out_concat = torch.cat((out_unpool,enc_out2), dim=1)
             out        = self.conv_block2(out_concat)
@@ -355,6 +394,7 @@ class vgg16_decoder(nn.Module):
         if self.levels > 1:
             enc_out1   = layers['out1']
             pool1_idx  = layers['pool1_idx']
+
             out_unpool = self.unpool1(out, pool1_idx, output_size=enc_out1.size())
             out_concat = torch.cat((out_unpool,enc_out1), dim=1)
             out        = self.conv_block1(out_concat)
@@ -365,7 +405,7 @@ class vgg16_decoder(nn.Module):
 
         return out   
 
-    def concat_forward(
+    def deconv_forward(
         self, 
         layers,
         att_map       = None,
