@@ -8,8 +8,8 @@ def compute_metrics(ambient_file, model_result):
     tar_img = Image.open(ambient_file)
     out_img = Image.open(model_result)
 
-    tar_img_ar = np.array(tar_img, dtype=np.int32)
-    out_img_ar = np.array(out_img, dtype=np.int32)
+    tar_img_ar = np.asarray(tar_img, dtype=np.int32)
+    out_img_ar = np.asarray(out_img, dtype=np.int32)
 
     MSE  = np.mean(np.square(tar_img_ar - out_img_ar))
     PSNR = 20.0 * np.log10(255.0) - 10.0 * np.log10(MSE)
@@ -17,10 +17,15 @@ def compute_metrics(ambient_file, model_result):
     tar_img_gray = tar_img.convert('L')
     out_img_gray = out_img.convert('L')
 
-    tar_img_gray_ar = np.array(tar_img_gray, dtype=np.uint8)
-    out_img_gray_ar = np.array(out_img_gray, dtype=np.uint8)
+    tar_img_gray_ar = np.asarray(tar_img_gray, dtype=np.uint8)
+    out_img_gray_ar = np.asarray(out_img_gray, dtype=np.uint8)
 
     SSIM = compare_ssim(tar_img_gray_ar, out_img_gray_ar)
+
+    tar_img.close()
+    out_img.close()
+    tar_img_gray.close()
+    out_img_gray.close()
 
     return PSNR, SSIM
 

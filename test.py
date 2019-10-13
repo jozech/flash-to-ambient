@@ -23,8 +23,6 @@ from tools.pre import read_test_data
 from tools.pre import get_array_list_on_test
 from tools.pre import shuffle_data
 from tools.pre import get_filtered_img_objs
-
-from tools.post import PSNR
 from tools.post import saveimg
 
 def test_op(model, opts):

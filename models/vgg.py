@@ -301,7 +301,6 @@ class vgg16_decoder(nn.Module):
             if mode == 'unpool': out_ch = int(ch_ini/2) # 64
 
             self.unpool2  = nn.MaxUnpool2d(kernel_size=2, stride=2)
-            self.convred2 = nn.Conv2d(256,128,3,1,1)
             self.unconv2  = nn.ConvTranspose2d(in_channels  = hid_ch*2, 
                                                out_channels = hid_ch, 
                                                kernel_size  = 3, 
@@ -318,7 +317,6 @@ class vgg16_decoder(nn.Module):
             out_ch = ch_ini
 
             self.unpool1  = nn.MaxUnpool2d(kernel_size=2, stride=2)
-            self.convred1 = nn.Conv2d(128,64,3,1,1)
             self.unconv1  = nn.ConvTranspose2d(in_channels  = hid_ch*2, 
                                                out_channels = hid_ch, 
                                                kernel_size  = 3, 

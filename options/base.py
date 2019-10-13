@@ -28,7 +28,7 @@ class baseOpt:
 		parser.add_argument('--lr2', type=float, default=2e-6, help='learning rate for the discriminator')
 		parser.add_argument('--beta1', type=float, default=0.5, help='beta1 hyp. for the Adam optimizer')
 		parser.add_argument('--lambda_GAN', type=float, default=0.1, help='lambda for the Adversarial Loss')
-		parser.add_argument('--R_loss', type=str, default='Cauchy', help='Loss type: Cauchy or L1')
+		parser.add_argument('--R_loss', type=str, default='L1', help='Loss type: Cauchy or L1')
 		parser.add_argument('--attention', type=str2bool, default=False, help='Attention mode')
 		parser.add_argument('--upsample', type=str, default='unpool', help='upsample mode: deconv, unpool.')
 		parser.add_argument('--vgg_freezed', type=str2bool, default=True, help='make or not backpropagation on the the vgg encoder')
