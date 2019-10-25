@@ -9,7 +9,7 @@ class vgg16_generator_unpool(nn.Module):
         assert (levels > 0)
 
         self.enc5   = vgg16_encoder(levels=levels)
-        self.dec5   = vgg16_decoder(levels=levels, mode=opts.upsample)
+        self.dec5   = vgg16_decoder(levels=levels, mode=opts.upsample, out_act=opts.out_act)
         self.levels = levels
 
     def forward(self, input_imgs):  
@@ -68,13 +68,13 @@ class vgg16_generator_unpool(nn.Module):
                 self.enc5.conv5_3.weight.copy_(features_list[28].weight)
                 self.enc5.conv5_3.bias.copy_(features_list[28].bias)
 
-class vgg16_generator_deconv(nn.Module):
+class vgg16_generator_deconv(nn.Module):        
     def __init__(self, levels, opts):
         super(vgg16_generator_deconv, self).__init__()
         assert (levels > 0)
 
         self.enc5   = vgg16_encoder(levels=levels)
-        self.dec5   = vgg16_decoder(levels=levels, mode=opts.upsample)
+        self.dec5   = vgg16_decoder(levels=levels, mode=opts.upsample, out_act=opts.out_act)
         self.levels = levels
 
     def forward(self, input_imgs):  
@@ -146,13 +146,16 @@ class discriminator(nn.Module):
         """
             Discriminator:
 
-            stride  : 2-2-2-1
-            channels: 64-128-256-512
+            default layers: 224(in)-112(down)-56(down)-28(down)-28-28(out)
+            levels = 5
+            down_levels = 3 
         """
         super(discriminator, self).__init__()
+        
+        self.input_ch  = 3
 
-        seq   = []
-        in_ch  = 6
+        in_ch  = self.input_ch
+        seq    = []
         out_ch = init_ch
         pad    = int((ksize/2 - 1) if ksize%2 == 0 else (ksize - 1)/2)
 
@@ -186,7 +189,7 @@ class discriminator(nn.Module):
                             stride       = stride, 
                             padding      = pad)]
 
-        if in_ch != 6:
+        if in_ch != self.input_ch:
             subseq.append(nn.BatchNorm2d(out_ch))
         subseq.append(nn.LeakyReLU(inplace=True))
 

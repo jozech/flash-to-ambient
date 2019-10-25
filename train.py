@@ -18,7 +18,7 @@ from models.models import setModel
 from options.base import baseOpt
 
 from tools.pre import read_train_data
-from tools.pre import get_array_list
+from tools.pre import get_array_list_on_train
 from tools.pre import get_array_to_net
 from tools.pre import shuffle_data
 from tools.pre import get_filtered_img_objs
@@ -48,10 +48,11 @@ def train_op(model, opts, isAdv):
     for ep in range(opts.load_epoch+1, opts.load_epoch+opts.epochs+1):
         start = time.time()
         # Get array of the images, make data augmentation and random shuffle
-        data_dict = get_array_list(input_list    = img_obj_list, 
-                                   filtered_list = img_bf_obj_list,
-                                   load_min_size = opts.load_size, 
-                                   out_size      = opts.crop_size)
+        data_dict = get_array_list_on_train(input_list    = img_obj_list, 
+                                            filtered_list = img_bf_obj_list,
+                                            load_min_size = opts.load_size, 
+                                            out_size      = opts.crop_size,
+                                            out_act       = opts.out_act)
 
         ambnt_imgs = np.array(data_dict['ambnt_imgs'])
         flash_imgs = np.array(data_dict['flash_imgs'])

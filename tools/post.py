@@ -29,11 +29,13 @@ def compute_metrics(ambient_file, model_result):
 
     return PSNR, SSIM
 
-def saveimg(results_path, full_file, ifake):
+def saveimg(results_path, full_file, ifake, out_act):
     ifake  = ifake.cpu().detach().numpy() 
     ifake  = np.squeeze(ifake , axis=0)
     ifake  = np.transpose(ifake , (1, 2, 0))
-    ifake  = (ifake *0.5 + 0.5)*255.0
+    
+    if out_act == 'tanh': ifake  = ifake *0.5 + 0.5
+    ifake  = ifake * 255.0
     ifake  = ifake.astype(np.uint8)
 
     f = full_file.split('/')[-1]

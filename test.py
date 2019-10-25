@@ -26,7 +26,7 @@ from tools.pre import get_filtered_img_objs
 from tools.post import saveimg
 
 def test_op(model, opts):
-    results_path = 'results/'+opts.model+'/'
+    results_path = 'results/'+opts.model+'_'+opts.upsample+'_'+opts.out_act+'_attgen_'+str(opts.attention_gen)+'_attdis_'+str(opts.attention_dis)+'_epoch-'+str(opts.load_epoch)+'/'
     if not os.path.exists(results_path):
         os.makedirs(results_path)
 
@@ -41,8 +41,9 @@ def test_op(model, opts):
         img_bf_obj_list = get_filtered_img_objs(img_obj_list)
 
     # Get array of image objects
-    data_dict = get_array_list_on_test(input_list=img_obj_list, 
-                                       filtered_list=img_bf_obj_list)
+    data_dict = get_array_list_on_test(input_list    = img_obj_list, 
+                                       filtered_list = img_bf_obj_list,
+                                       out_act       = opts.out_act)
 
     t_end  = time.time()
     t_prep = (t_end - t_start)/(2 * len(img_obj_list))
@@ -71,7 +72,7 @@ def test_op(model, opts):
             model.set_filtered_inputs(flash_bf_batch, None)  
 
         model.forward()
-        saveimg(results_path, flash_file, model.fake_Y)
+        saveimg(results_path, flash_file, model.fake_Y, opts.out_act)
         print('\riter:{:4d}/{:4d}'.format(it+1,len(flash_imgs)), end='')
     print('\rTesting [{:4d}/{:4d}]: check the results on "{}"'.format(it+1,len(flash_imgs), results_path))
 

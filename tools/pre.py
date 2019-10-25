@@ -48,12 +48,13 @@ def random_crop(img, crop_size, wrand, hrand):
     img = img.crop((wrand, hrand, wrand+crop_size, hrand+crop_size))
     return img
 
-def get_array_list(
+def get_array_list_on_train(
     input_list    = None,
     filtered_list = None, 
     crop          = True, 
     load_min_size = None,
-    out_size      = None):
+    out_size      = None,
+    out_act       = 'tanh'):
 
     ambnt_list = []
     flash_list = []
@@ -101,8 +102,8 @@ def get_array_list(
         #img_f.show()
 
         if filtered_list:
-            img_a_bf_out = get_array_to_net(img_a_bf)
-            img_f_bf_out = get_array_to_net(img_f_bf)
+            img_a_bf_out = get_array_to_net(img_a_bf, out_act)
+            img_f_bf_out = get_array_to_net(img_f_bf, out_act)
 
             ambnt_bf_list.append(img_a_bf_out)
             flash_bf_list.append(img_f_bf_out)
@@ -110,8 +111,8 @@ def get_array_list(
             img_a_bf.close()
             img_f_bf.close()
 
-        img_a_out = get_array_to_net(img_a)
-        img_f_out = get_array_to_net(img_f)
+        img_a_out = get_array_to_net(img_a, out_act)
+        img_f_out = get_array_to_net(img_f, out_act)
 
         ambnt_list.append(img_a_out)
         flash_list.append(img_f_out)
@@ -132,7 +133,8 @@ def get_array_list_on_test(
     input_list    = None,
     filtered_list = None,
     load_min_size = None,
-    out_size      = None):
+    out_size      = None,
+    out_act       = 'tanh'):
 
     ambnt_list = []
     flash_list = []
@@ -148,7 +150,7 @@ def get_array_list_on_test(
             flash_bf_list.append(img_f_bf_out)
             img_f_bf.close()
 
-        img_f_out = get_array_to_net(img_f)
+        img_f_out = get_array_to_net(img_f, out_act)
         flash_list.append(img_f_out)
 
         img_f.close()
@@ -160,9 +162,10 @@ def get_array_list_on_test(
 
     return data_dict
 
-def get_array_to_net(im):
+def get_array_to_net(im, out_act):
     img_arr = np.asarray(im, dtype=np.float32)/255.0
-    img_arr = img_arr * 2.0 - 1.0
+    if out_act == 'tanh': 
+        img_arr = img_arr * 2.0 - 1.0
     img_arr = np.transpose(img_arr, (2, 0, 1))
 
     return img_arr

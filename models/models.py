@@ -3,6 +3,7 @@ import torch
 if torch.cuda.is_available():
 	torch.cuda.manual_seed_all(20)
 
+import torch.nn as nn
 import os
 import numpy as np
 
@@ -19,7 +20,7 @@ class VGG_ED:
 		self.opts    = opts
 		self.isTrain =  isTrain
 		self.device  = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
-
+		self.attention = opts.attention
 		if isTrain:
 			print('Training mode [{}]'.format(self.device))
 			if opts.upsample == 'deconv':
@@ -29,15 +30,16 @@ class VGG_ED:
 
 			self.Gen.set_vgg_as_encoder()	
 			
-			if   opts.R_loss == 'Cauchy': self.criteion = self.CauchyLoss
-			elif opts.R_loss == 'L1'    : self.criteion = torch.nn.L1Loss()
+			if   opts.R_loss == 'Cauchy': self.criterion = self.CauchyLoss
+			elif opts.R_loss == 'L1'    : self.criterion = torch.nn.L1Loss()
 
 			print('Training with:\n')
 			print('\tmodel      \t{}'.format(opts.model))
 			print('\tloss 	  \t{}'.format(opts.R_loss))
 			print('\tupsample \t{}'.format(opts.upsample))
 			print('\tAttention\t{}'.format(opts.attention))
-			print('\tvgg_freezed\t{}\n'.format(opts.vgg_freezed))
+			print('\tvgg_freezed\t{}'.format(opts.vgg_freezed))
+			print('\tout_act  \t{}\n'.format(opts.out_act))
 			self.optimizer_gen = torch.optim.Adam(self.Gen.parameters(), lr=opts.lr1, betas=(opts.beta1, 0.999))
 		else:
 			print('Testing mode![on {}]\n'.format(self.device))
@@ -56,12 +58,17 @@ class VGG_ED:
 		self.real_X = torch.cuda.FloatTensor(inputs)
 		if targets is not None: 
 			self.real_Y = torch.cuda.FloatTensor(targets)
+			if self.attention:
+				self.att_map= 1.0 - torch.abs(self.real_X - self.real_Y).mean(dim=1, keepdim=True)
 
 	def forward(self):
 		self.Z, self.fake_Y = self.Gen(self.real_X)
 		
 	def backward_gen(self):
-		self.loss_R = self.criteion(self.fake_Y, self.real_Y)
+		if self.attention:
+			self.loss_R = self.criterion(self.fake_Y * self.att_map, self.real_Y * self.att_map)
+		else: 
+			self.loss_R = self.criterion(self.fake_Y, self.real_Y)
 		self.loss_R.backward()
 
 	def optimize_parameters(self):
@@ -99,13 +106,13 @@ class VGG_ED:
 		self.Gen.load_state_dict(state_dict)
 
 class advModel:
-	def __init__(self, opts, isTrain=True, att_map=False, loss_type='Cauchy'):
+	def __init__(self, opts, isTrain=True):
 		self.opts    = opts
 		self.isTrain = isTrain
 		self.device  = torch.device('cuda:{}'.format(self.opts.gpu_ids[0])) if self.opts.gpu_ids else torch.device('cpu') 
-		self.attmap  = att_map
-		self.att_map = None
-		
+		self.attention_gen = opts.attention_gen
+		self.attention_dis = opts.attention_dis
+
 		if isTrain:
 			print('Training mode [{}]'.format(self.device))
 			if opts.upsample == 'deconv':
@@ -115,26 +122,29 @@ class advModel:
 
 			self.Gen.set_vgg_as_encoder()	
 			
-			if   opts.R_loss == 'Cauchy': self.criteion = self.CauchyLoss
-			elif opts.R_loss == 'L1'    : self.criteion = torch.nn.L1Loss()
+			if   opts.R_loss == 'Cauchy': self.criterion = self.CauchyLoss
+			elif opts.R_loss == 'L1'    : self.criterion = torch.nn.L1Loss()
 
 			print('Training with:\n')
 			print('\tmodel      \t{}'.format(opts.model))
 			print('\tloss 	  \t{}'.format(opts.R_loss))
 			print('\tupsample \t{}'.format(opts.upsample))
-			print('\tAttention\t{}'.format(opts.attention))
-			print('\tvgg_freezed\t{}\n'.format(opts.vgg_freezed))
-			self.Gen = vgg16_generator_deconv(levels=5).cuda()
-			self.Dis = discriminator(deep=5, down_leves=3, ksize=3, att=att_map).cuda()
-			self.Gen.set_vgg_as_encoder()	
+			print('\tAttention gen\t{}'.format(opts.attention_gen))
+			print('\tAttention dis\t{}'.format(opts.attention_dis))
+			print('\tvgg_freezed\t{}'.format(opts.vgg_freezed))
+			print('\tout_act  \t{}\n'.format(opts.out_act))
 
+			self.Dis = discriminator(deep=6, down_leves=5, ksize=3, att=opts.attention_dis).cuda()
 			self.criterionGAN  = GANLoss().cuda()
-			self.criteionL1    = torch.nn.L1Loss()
 			self.optimizer_gen = torch.optim.Adam(self.Gen.parameters(), lr=opts.lr1, betas=(opts.beta1, 0.999))
 			self.optimizer_dis = torch.optim.Adam(self.Dis.parameters(), lr=opts.lr2, betas=(opts.beta1, 0.999))
+
 		else:
 			print('Testing mode![on {}]\n'.format(self.device))
-			self.Gen    = vgg16_generator_deconv(levels=5).cuda()
+			if opts.upsample == 'deconv':
+				self.Gen = vgg16_generator_deconv(levels=5, opts=opts).cuda()
+			elif opts.upsample == 'unpool':
+				self.Gen = vgg16_generator_unpool(levels=5, opts=opts).cuda()
 			self.Gen.set_vgg_as_encoder()
 
 	def CauchyLoss(self, inputs, targets, C=0.1):
@@ -144,35 +154,46 @@ class advModel:
 
 	def set_inputs(self, inputs, targets):
 		self.real_X = torch.cuda.FloatTensor(inputs)
-		if targets: 
+		if targets is not None: 
 			self.real_Y = torch.cuda.FloatTensor(targets)
-			if self.attmap:
-				self.att_map= torch.abs(self.real_X - self.real_Y).mean(dim=1, keepdim=True)
+			if self.attention_gen:
+				self.att_map= 1.0 - torch.abs(self.real_X - self.real_Y).mean(dim=1, keepdim=True)
 
 	def forward(self):
 		self.Z, self.fake_Y = self.Gen(self.real_X)
 
 	def backward_gen(self):
-		synthetic_pair = torch.cat((self.real_X, self.fake_Y), dim=1)
-		dis_out_fake   = self.Dis(synthetic_pair,self.att_map)
-
+		#synthetic_pair = torch.cat((self.real_X, self.fake_Y), dim=1)
 		# We set mode=real, because we will use the first term of the BCEWithLogitsLoss
+		
+		if self.attention_gen:
+			self.loss_R  = self.criterion(self.fake_Y * self.att_map, self.real_Y * self.att_map)
+			dis_out_fake = self.Dis(self.fake_Y, self.att_map)
+		else: 
+			self.loss_R  = self.criterion(self.fake_Y, self.real_Y)
+			dis_out_fake = self.Dis(self.fake_Y)
+		
 		self.loss_Gen = self.criterionGAN(dis_out_fake, 'real')   # log(D(G(x)))
-		self.loss_R   = self.criteionL1(self.fake_Y, self.real_Y) # Loss_L1
-
 		self.loss_Gen_L1 = self.loss_R + self.loss_Gen * self.opts.lambda_GAN
 		self.loss_Gen_L1.backward()	
 
 	def backward_dis(self):
-		synthetic_pair = torch.cat((self.real_X, self.fake_Y), dim=1)
-		authentic_pair = torch.cat((self.real_X, self.real_Y), dim=1)
+		#synthetic_pair = torch.cat((self.real_X, self.fake_Y), dim=1)
+		#authentic_pair = torch.cat((self.real_X, self.real_Y), dim=1)
 
 		# No backpropagation along the generator (detach)
-		dis_out_fake = self.Dis(synthetic_pair.detach(),self.att_map)
-		dis_out_real = self.Dis(authentic_pair,self.att_map)
+
+		if self.attention_dis:
+			dis_out_fake = self.Dis(self.fake_Y.detach(), self.att_map)
+			dis_out_real = self.Dis(self.real_Y, self.att_map)
+		else:
+			dis_out_fake = self.Dis(self.fake_Y.detach())
+			dis_out_real = self.Dis(self.real_Y)
 
 		self.loss_dis_fake = self.criterionGAN(dis_out_fake, 'fake')  # log(1-D(x_hat)))
 		self.loss_dis_real = self.criterionGAN(dis_out_real, 'real')  # log(D(x)))
+		
+
 
 		self.loss_Dis  = self.loss_dis_fake + self.loss_dis_real
 		self.loss_Dis_ = self.loss_Dis * self.opts.lambda_GAN
@@ -243,7 +264,8 @@ class DeepFlash:
 			print('\tloss 	  \t{}'.format(opts.R_loss))
 			print('\tupsample \t{}'.format(opts.upsample))
 			print('\tAttention\t{}'.format(opts.attention))
-			print('\tvgg_freezed\t{}\n'.format(opts.vgg_freezed))
+			print('\tvgg_freezed\t{}'.format(opts.vgg_freezed))
+			print('\tout_act  \t{}\n'.format(opts.out_act))
 			self.optimizer_gen = torch.optim.Adam(self.Gen.parameters(), lr=opts.lr1, betas=(opts.beta1, 0.999))
 		else:
 			print('Testing mode![{}]\n'.format(self.device))
@@ -255,7 +277,7 @@ class DeepFlash:
 
 	def set_inputs(self, inputs, targets):
 		self.real_X = torch.cuda.FloatTensor(inputs)
-		if targets: 
+		if targets is not None: 
 			self.real_Y = torch.cuda.FloatTensor(targets)
 
 	def set_filtered_inputs(self, inputs_bf, targets_bf):
@@ -323,7 +345,7 @@ class UNet512:
 
 	def set_inputs(self, inputs, targets):
 		self.real_X = torch.cuda.FloatTensor(inputs)
-		if targets: 
+		if targets is not None: 
 			self.real_Y = torch.cuda.FloatTensor(targets)
 
 	def forward(self):

@@ -241,6 +241,7 @@ class vgg16_decoder(nn.Module):
         self, 
         levels,
         mode,
+        out_act     = 'tanh',
         use_dropout = False,
         use_bn      = False,
         use_attn    = False,
@@ -328,7 +329,10 @@ class vgg16_decoder(nn.Module):
         # [224x224]
         if levels > 0:
             self.convToCh = nn.Conv2d(ch_ini,3,3,1,1)
-            self.tanh0    = nn.Tanh()
+            if out_act == 'tanh':
+                self.outact = nn.Tanh()
+            else:
+                self.outact = nn.Sigmoid()
 
 
     def convBlock(self, use_drop, drop_prop, use_attn, use_bn, block_size, in_ch, hid_ch, out_ch):
@@ -399,7 +403,7 @@ class vgg16_decoder(nn.Module):
 
         if self.levels > 0:
             out = self.convToCh(out)
-            out = self.tanh0(out)
+            out = self.outact(out)
 
         return out   
 
@@ -439,6 +443,6 @@ class vgg16_decoder(nn.Module):
 
         if self.levels > 0:
             out = self.convToCh(out)
-            out = self.tanh0(out)
+            out = self.outact(out)
 
         return out  
