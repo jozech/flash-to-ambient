@@ -14,7 +14,7 @@ The architecture has two CNNs, the generator, generates synthetic ambient images
 |![](imgs/input/People_014_flash.png)|![Synthetic ambient image](imgs/fake/People_014_flash.png)|![Ambient image](imgs/target/People_014_ambient.png)|
 |![](imgs/input/Objects_337_flash.png)|![Synthetic ambient image](imgs/fake/Objects_337_flash.png)|![Ambient image](imgs/target/Objects_337_ambient.png)|
 
-Figure 2. Some results of our model based on the pix2pix framework. Flash images (left), images generated through the generator network (middle) and the ground truth, the ambient image(right). These results are obtained after 600 epochs with the default learning rates, 2e-4(generator) and 2e-5(discriminator).
+Figure 1. Some results of our model. Flash images (left), images generated through the generator network (middle) and the ground truth, the ambient image(right). These results are obtained after 1000 epochs with the default learning rates, 2e-5(generator) and 2e-6(discriminator).
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ cd flash-to-ambient
 python download_database.py
 ```
 
-If you have problems with the script above, you can download it [here](https://drive.google.com/open?id=1Z7Wy9Hj5HjVD8P-zVkw55_BISQ7jQSFg), then click on the download button. If you use the external URL, you have to put the *'DATASET_LR'* folder inside a directory called *'datasets'*. The dataset is a reduced set of [FAID](http://yaksoy.github.io/faid/) because in the entire FAID there are ambient images with low illumination, artifacts, etc. All images were reduced to 320x240 resolution for our experiments.
+If you have problems with the script above, you can download it [here](https://drive.google.com/file/d/15ycOOjjOJ4KkwubC7g8Ttc5OvzClzM1C/view?usp=sharing), then click on the download button. If you use the external URL, you have to put the *'DATASET_LR'* folder inside a directory called *'datasets'*. The dataset is a reduced set of [FAID](http://yaksoy.github.io/faid/) because in the entire FAID there are ambient images with low illumination, artifacts, etc. All images were reduced to 320x240 resolution for our experiments.
 
      ├─ flash-to-ambient/
      ├─ datasets/
