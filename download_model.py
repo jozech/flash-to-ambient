@@ -4,8 +4,8 @@ import zipfile
 
 from sys import stdout
 
-ID = '1g1SMPSCbfy0KisVJqpBOyQSrDK9kfIRP'
-DEST = 'model-600.zip'
+ID = '15ycOOjjOJ4KkwubC7g8Ttc5OvzClzM1C'
+DEST = 'model-1000.zip'
 
 def confirm_token(resp):
     for key, value in resp.cookies.items():
