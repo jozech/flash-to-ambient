@@ -37,6 +37,7 @@ class baseOpt:
 		parser.add_argument('--save_epoch', type=int, default=100, help='number of epochs for saving the model')
 		parser.add_argument('--load_epoch', type=int, default=0,help='load at epoch #')
 		parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
+		parser.add_argument('--sample_dir', type=str, default=None, help='sample dir of the sample to eval through the model')
 		
 		return parser
 
