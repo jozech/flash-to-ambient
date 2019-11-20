@@ -156,7 +156,7 @@ class advModel:
 		self.real_X = torch.cuda.FloatTensor(inputs)
 		if targets is not None: 
 			self.real_Y = torch.cuda.FloatTensor(targets)
-			if self.attention_gen:
+			if self.attention_gen or self.attention_dis:
 				self.att_map= 1.0 - torch.abs(self.real_X - self.real_Y).mean(dim=1, keepdim=True)
 
 	def forward(self):
@@ -168,9 +168,12 @@ class advModel:
 		
 		if self.attention_gen:
 			self.loss_R  = self.criterion(self.fake_Y * self.att_map, self.real_Y * self.att_map)
-			dis_out_fake = self.Dis(self.fake_Y, self.att_map)
 		else: 
 			self.loss_R  = self.criterion(self.fake_Y, self.real_Y)
+
+		if self.attention_dis:
+			dis_out_fake = self.Dis(self.fake_Y, self.att_map)
+		else:
 			dis_out_fake = self.Dis(self.fake_Y)
 		
 		self.loss_Gen = self.criterionGAN(dis_out_fake, 'real')   # log(D(G(x)))
