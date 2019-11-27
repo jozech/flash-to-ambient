@@ -285,13 +285,13 @@ def get_filtered_img_objs(im_list):
     return img_objs
 
 
-if __name__ == "__main__":
-    im  = Image.open('results/flash_it_3.png')
-    out = bilateral_filter(im, 7)
+#if __name__ == "__main__":
+#    im  = Image.open('results/flash_it_3.png')
+#    out = bilateral_filter(im, 7)
 
-    im.show()
-    out.show()
-    im.close()
+#    im.show()
+#    out.show()
+#    im.close()
                 
 
                 

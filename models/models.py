@@ -160,7 +160,7 @@ class advModel:
 				self.att_map= 1.0 - torch.abs(self.real_X - self.real_Y).mean(dim=1, keepdim=True)
 
 	def forward(self):
-		self.Z, self.fake_Y = self.Gen(self.real_X)
+		_, self.fake_Y = self.Gen(self.real_X)
 
 	def backward_gen(self):
 		#synthetic_pair = torch.cat((self.real_X, self.fake_Y), dim=1)
@@ -176,7 +176,7 @@ class advModel:
 		else:
 			dis_out_fake = self.Dis(self.fake_Y)
 		
-		self.loss_Gen = self.criterionGAN(dis_out_fake, 'real')   # log(D(G(x)))
+		self.loss_Gen  = self.criterionGAN(dis_out_fake, 'real')   # log(D(G(x)))
 		self.loss_Gen_L1 = self.loss_R + self.loss_Gen * self.opts.lambda_GAN
 		self.loss_Gen_L1.backward()	
 
@@ -195,8 +195,6 @@ class advModel:
 
 		self.loss_dis_fake = self.criterionGAN(dis_out_fake, 'fake')  # log(1-D(x_hat)))
 		self.loss_dis_real = self.criterionGAN(dis_out_real, 'real')  # log(D(x)))
-		
-
 
 		self.loss_Dis  = self.loss_dis_fake + self.loss_dis_real
 		self.loss_Dis_ = self.loss_Dis * self.opts.lambda_GAN

@@ -56,7 +56,6 @@ def train_op(model, opts, isAdv):
 
         ambnt_imgs = np.array(data_dict['ambnt_imgs'])
         flash_imgs = np.array(data_dict['flash_imgs'])
-
         
         np.random.shuffle(indices)
         
@@ -96,7 +95,7 @@ def train_op(model, opts, isAdv):
             
             if isAdv:
                 loss_gen.append(model.loss_Gen.cpu().detach().numpy())
-                loss_dis.append(model.loss_Dis.cpu().detach().numpy()/2)
+                loss_dis.append(model.loss_Dis.cpu().detach().numpy())
                 print(', loss_gen: {:.4f}, loss_dis: {:.4f}'.format(loss_gen[-1], loss_dis[-1]), end='')
            
         end = time.time()
