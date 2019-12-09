@@ -1,20 +1,15 @@
 # Flash-To-Ambient Model
 
-In the process of generating digital images from scenes sometimes the level of light is very low and insufficient to get a properly digitization of the image. Thus, noisy and blurry areas are produced in the image. We can handle this situation with an external illumination device such as a camera flash, but here is when other challenges are generated. The camera flash can be blinding and too strong for a scene, so instead of enhancing the low light image, sometimes, it causes very bright and very dark areas. Another problem in the flash image is the shadows. These shadows sometimes cover considerable areas of the scene depending on the direction of the camera flash. And finally, getting the correct tone of the scene objects in a flash image becomes very difficult, because the color of objects changes due to the flash illumination. In contrast, in an ambient image, the illumination of the objects not depends so much of their position, because the available light can be more evenly distributed.
+To cope with the challenges that low light conditions produce in images, photographers tend to use the light provided by the camera flash to get better illumination. Nevertheless, harsh shadows and non-uniform illumination can arise from using a camera flash, especially in low light conditions. Previous studies have focused on normalizing the lighting on flash images; however, to the best of our knowledge, no prior studies have examined the side-way shadows removal, reconstruction of overexposed areas, and the generation of synthetic ambient shadows or natural tone of scene objects. To provide natural illumination and ensure the generation of high-frequency details on flash images, we propose a generative adversarial network in a guided conditional mode, and a guided reconstruction loss to ensure uniform illumination. We show that this approach not only generates natural illumination but also attenuates harsh shadows, simultaneously generating synthetic ambient shadows. Our approach achieves promising results on a custom FAID dataset. We also analyze the components of our proposal and how they affect the overall performance and discuss the opportunities for future work.
 
-![Screenshot](imgs/generator-model.png)
-
-The architecture has two CNNs, the generator, generates synthetic ambient images, and the discriminator network classifies if their input images are authentic. The generator network has as an encoder part all the convolutional layers of the [VGG-16](https://arxiv.org/abs/1409.1556) architecture pre-trained on ImageNet, and decoder part is symmetric respect to the encoder. The generator models the translation from flash images to synthetic ambient images. Ambient images from the training set are classified by the discriminator as a real, while the synthetic ambient image is classified by the discriminator as a fake.
 
 ## Qualitative results
 
 | Flash image | Synthetic ambient image | Ambient image |
 |:---:|:---:|:---:|
 |![](imgs/input/People_150_flash.png)|![Synthetic ambient image](imgs/fake/People_150_flash.png)|![Ambient image](imgs/target/People_150_ambient.png)|
-|![](imgs/input/People_014_flash.png)|![Synthetic ambient image](imgs/fake/People_014_flash.png)|![Ambient image](imgs/target/People_014_ambient.png)|
-|![](imgs/input/Objects_337_flash.png)|![Synthetic ambient image](imgs/fake/Objects_337_flash.png)|![Ambient image](imgs/target/Objects_337_ambient.png)|
-
-Figure 1. Some results of our model. Flash images (left), images generated through the generator network (middle) and the ground truth, the ambient image(right). These results are obtained after 1000 epochs with the default learning rates, 2e-5(generator) and 2e-6(discriminator).
+|![](imgs/input/Toys_141_flash.png)|![Synthetic ambient image](imgs/fake/Toys_141_flash.png)|![Ambient image](imgs/target/Toys_141_ambient.png)|
+|![](imgs/input/Objects_148_flash.png)|![Synthetic ambient image](imgs/fake/Objects_148_flash.png)|![Ambient image](imgs/target/Objects_148_ambient.png)|
 
 ## Prerequisites
 
