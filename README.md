@@ -7,8 +7,8 @@ To cope with the challenges that low light conditions produce in images, photogr
 
 | Flash image | Synthetic ambient image | Ambient image |
 |:---:|:---:|:---:|
+|![](imgs/input/People_014_flash.png)|![Synthetic ambient image](imgs/fake/People_014_flash.png)|![Ambient image](imgs/target/People_014_ambient.png)|
 |![](imgs/input/People_150_flash.png)|![Synthetic ambient image](imgs/fake/People_150_flash.png)|![Ambient image](imgs/target/People_150_ambient.png)|
-|![](imgs/input/Toys_141_flash.png)|![Synthetic ambient image](imgs/fake/Toys_141_flash.png)|![Ambient image](imgs/target/Toys_141_ambient.png)|
 |![](imgs/input/Objects_148_flash.png)|![Synthetic ambient image](imgs/fake/Objects_148_flash.png)|![Ambient image](imgs/target/Objects_148_ambient.png)|
 
 ## Prerequisites

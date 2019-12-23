@@ -31,7 +31,7 @@ class baseOpt:
 		parser.add_argument('--lambda_GAN', type=float, default=1.0, help='lambda for the Adversarial Loss')
 		parser.add_argument('--R_loss', type=str, default='L1', help='Loss type: Cauchy or L1')
 		parser.add_argument('--attention_gen', type=str2bool, default=True, help='Attention mode')
-		parser.add_argument('--attention_dis', type=str2bool, default=False, help='Attention mode')
+		parser.add_argument('--attention_dis', type=str2bool, default=True, help='Attention mode')
 		parser.add_argument('--upsample', type=str, default='deconv', help='upsample mode: deconv, unpool.')
 		parser.add_argument('--vgg_freezed', type=str2bool, default=True, help='make or not backpropagation on the the vgg encoder')
 		parser.add_argument('--save_epoch', type=int, default=100, help='number of epochs for saving the model')
