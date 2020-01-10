@@ -1,5 +1,7 @@
 # Flash-To-Ambient Model
 
+### [Paper](https://arxiv.org/pdf/1912.08813.pdf)
+
 To cope with the challenges that low light conditions produce in images, photographers tend to use the light provided by the camera flash to get better illumination. Nevertheless, harsh shadows and non-uniform illumination can arise from using a camera flash, especially in low light conditions. Previous studies have focused on normalizing the lighting on flash images; however, to the best of our knowledge, no prior studies have examined the side-way shadows removal, reconstruction of overexposed areas, and the generation of synthetic ambient shadows or natural tone of scene objects. To provide natural illumination and ensure the generation of high-frequency details on flash images, we propose a generative adversarial network in a guided conditional mode. We define an attention mechanism to guide the reconstruction loss, and an adversial loss to ensure high-frequency details. We show that this approach not only generates natural illumination but also attenuates harsh shadows, simultaneously generating synthetic ambient shadows. Our approach achieves promising results on a custom FAID dataset. We also analyze the components of our proposal and how they affect the overall performance and discuss the opportunities for future work.
 
 
