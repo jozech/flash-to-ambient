@@ -6,3 +6,4 @@ tmp/
 datasets/
 checkpoints/
 *.zip
+comp.py

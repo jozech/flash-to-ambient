@@ -20,7 +20,7 @@ def eval_op(model, opts):
     # Set inputs of the model and run 
     model.set_inputs([sample_img], None)  
     model.forward()
-    saveimg(results_path, opts.sample_dir.split('/')[-1], model.fake_Y, opts.out_act)
+    saveimg(results_path, opts.sample_dir.split('/')[-1][:-9]+'synth.png', model.fake_Y, opts.out_act)
     print('New sample convereted...')
 
 if __name__ == "__main__":
