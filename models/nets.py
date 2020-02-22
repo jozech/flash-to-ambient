@@ -26,47 +26,46 @@ class vgg16_generator_unpool(nn.Module):
         vgg16 = models.vgg16(pretrained=True, progress=True)
         features_list = list(vgg16.features)
 
-        with torch.no_grad():
-            # [224x224]
-            if self.levels > 1:
-                self.enc5.conv1_1.weight.copy_(features_list[0].weight)
-                self.enc5.conv1_1.bias.copy_(features_list[0].bias)
-                self.enc5.conv1_2.weight.copy_(features_list[2].weight)
-                self.enc5.conv1_2.bias.copy_(features_list[2].bias)
+        # [224x224]
+        if self.levels > 1:
+            self.enc5.conv1_1.weight.copy_(features_list[0].weight)
+            self.enc5.conv1_1.bias.copy_(features_list[0].bias)
+            self.enc5.conv1_2.weight.copy_(features_list[2].weight)
+            self.enc5.conv1_2.bias.copy_(features_list[2].bias)
             
-            # [112x112]
-            if self.levels > 2:
-                self.enc5.conv2_1.weight.copy_(features_list[5].weight)
-                self.enc5.conv2_1.bias.copy_(features_list[5].bias)
-                self.enc5.conv2_2.weight.copy_(features_list[7].weight)
-                self.enc5.conv2_2.bias.copy_(features_list[7].bias)
+        # [112x112]
+        if self.levels > 2:
+            self.enc5.conv2_1.weight.copy_(features_list[5].weight)
+            self.enc5.conv2_1.bias.copy_(features_list[5].bias)
+            self.enc5.conv2_2.weight.copy_(features_list[7].weight)
+            self.enc5.conv2_2.bias.copy_(features_list[7].bias)
 
-            # [56x56]
-            if self.levels > 3:
-                self.enc5.conv3_1.weight.copy_(features_list[10].weight)
-                self.enc5.conv3_1.bias.copy_(features_list[10].bias)
-                self.enc5.conv3_2.weight.copy_(features_list[12].weight)
-                self.enc5.conv3_2.bias.copy_(features_list[12].bias)
-                self.enc5.conv3_3.weight.copy_(features_list[14].weight)
-                self.enc5.conv3_3.bias.copy_(features_list[14].bias)
+        # [56x56]
+        if self.levels > 3:
+            self.enc5.conv3_1.weight.copy_(features_list[10].weight)
+            self.enc5.conv3_1.bias.copy_(features_list[10].bias)
+            self.enc5.conv3_2.weight.copy_(features_list[12].weight)
+            self.enc5.conv3_2.bias.copy_(features_list[12].bias)
+            self.enc5.conv3_3.weight.copy_(features_list[14].weight)
+            self.enc5.conv3_3.bias.copy_(features_list[14].bias)
 
-            # [28x28]
-            if self.levels > 4:
-                self.enc5.conv4_1.weight.copy_(features_list[17].weight)
-                self.enc5.conv4_1.bias.copy_(features_list[17].bias)
-                self.enc5.conv4_2.weight.copy_(features_list[19].weight)
-                self.enc5.conv4_2.bias.copy_(features_list[19].bias)
-                self.enc5.conv4_3.weight.copy_(features_list[21].weight)
-                self.enc5.conv4_3.bias.copy_(features_list[21].bias)
+        # [28x28]
+        if self.levels > 4:
+            self.enc5.conv4_1.weight.copy_(features_list[17].weight)
+            self.enc5.conv4_1.bias.copy_(features_list[17].bias)
+            self.enc5.conv4_2.weight.copy_(features_list[19].weight)
+            self.enc5.conv4_2.bias.copy_(features_list[19].bias)
+            self.enc5.conv4_3.weight.copy_(features_list[21].weight)
+            self.enc5.conv4_3.bias.copy_(features_list[21].bias)
 
-            # [14x14]
-            if self.levels > 5:
-                self.enc5.conv5_1.weight.copy_(features_list[24].weight)
-                self.enc5.conv5_1.bias.copy_(features_list[24].bias)
-                self.enc5.conv5_2.weight.copy_(features_list[26].weight)
-                self.enc5.conv5_2.bias.copy_(features_list[26].bias)
-                self.enc5.conv5_3.weight.copy_(features_list[28].weight)
-                self.enc5.conv5_3.bias.copy_(features_list[28].bias)
+        # [14x14]
+        if self.levels > 5:
+            self.enc5.conv5_1.weight.copy_(features_list[24].weight)
+            self.enc5.conv5_1.bias.copy_(features_list[24].bias)
+            self.enc5.conv5_2.weight.copy_(features_list[26].weight)
+            self.enc5.conv5_2.bias.copy_(features_list[26].bias)
+            self.enc5.conv5_3.weight.copy_(features_list[28].weight)
+            self.enc5.conv5_3.bias.copy_(features_list[28].bias)
 
 class vgg16_generator_deconv(nn.Module):        
     def __init__(self, levels, opts):

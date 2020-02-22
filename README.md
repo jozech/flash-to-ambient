@@ -64,6 +64,10 @@ python train.py
 ```
 python train.py --save_epoch=50
 ```
+* To evaluate one image
+```
+python evalM_oneimg.py --sample_dir=FILENAME
+```
 
 If you want to know more about the hyperparameters, see *options/base.py*.
 
