@@ -1,4 +1,4 @@
-# Flash-To-Ambient Model
+# Ambient Lighting Generation for Flash Images with Guided Conditional Adversarial Networks
 
 ### [Paper](https://arxiv.org/pdf/1912.08813.pdf)
 
